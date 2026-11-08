@@ -1,0 +1,6 @@
+seed,patient_train_images,image_train_images,train_class_counts_patient,train_class_counts_image,val_images,test_images,val_patients,test_patients,image_train_heldout_patients,patient_train_heldout_overlap,paired_val_rows_identical,paired_test_rows_identical,status
+42,403,403,"{'Benign': 103, 'Malignant': 52, 'Normal': 248}","{'Benign': 103, 'Malignant': 52, 'Normal': 248}",100,106,6,6,12,0,True,True,PASS
+123,405,405,"{'Benign': 101, 'Malignant': 56, 'Normal': 248}","{'Benign': 101, 'Malignant': 56, 'Normal': 248}",100,106,6,6,12,0,True,True,PASS
+2025,401,401,"{'Benign': 99, 'Malignant': 51, 'Normal': 251}","{'Benign': 99, 'Malignant': 51, 'Normal': 251}",100,106,6,6,12,0,True,True,PASS
+7,403,403,"{'Benign': 96, 'Malignant': 57, 'Normal': 250}","{'Benign': 96, 'Malignant': 57, 'Normal': 250}",100,106,6,6,12,0,True,True,PASS
+99,400,400,"{'Benign': 94, 'Malignant': 57, 'Normal': 249}","{'Benign': 94, 'Malignant': 57, 'Normal': 249}",100,106,6,6,12,0,True,True,PASS

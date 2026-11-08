@@ -1,0 +1,43 @@
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Operating system
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Raw dataset - not redistributed through this repository
+data/raw/
+
+# Model checkpoints
+*.pt
+*.pth
+*.ckpt
+
+# Generated visual outputs
+results/**/*.png
+
+# Temporary and test caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+docs/project_structure.txt
+

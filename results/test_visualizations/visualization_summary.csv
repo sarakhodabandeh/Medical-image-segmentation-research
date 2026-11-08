@@ -1,0 +1,6 @@
+filename,patient_id,label,seed,reason_for_selection,image_level_dice,patient_level_dice,image_level_false_positive_area_fraction,patient_level_false_positive_area_fraction,image_level_selected_epoch,patient_level_selected_epoch,visualization_file
+CHVI_005.png,CHVI,Malignant,123,Malignant lesion; Dice=0 in both methods,0.0,0.0,,,9,10,results\test_visualizations\CHVI_005_seed_123_comparison.png
+DAPA_025.png,DAPA,Benign,42,Benign lesion; Dice=0 in both methods,0.0,0.0,,,9,9,results\test_visualizations\DAPA_025_seed_42_comparison.png
+PLBA_024.png,PLBA,Benign,123,Benign lesion; high Dice in both methods,0.8500317606975805,0.9174140508221226,,,9,10,results\test_visualizations\PLBA_024_seed_123_comparison.png
+FLKA_002.png,FLKA,Malignant,7,Malignant lesion; high Dice in both methods,0.8355395683453237,0.8617433249541409,,,10,9,results\test_visualizations\FLKA_002_seed_7_comparison.png
+STSP_022.png,STSP,Normal,123,Normal image; high false-positive area,,,0.3360137939453125,0.5209197998046875,9,10,results\test_visualizations\STSP_022_seed_123_comparison.png

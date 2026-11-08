@@ -1,0 +1,7 @@
+filename,method,max_probability,predicted_pixels,target_pixels,dice
+CAWI_005.png,padding,0.6787089705467224,155,1307,0.0
+CAWI_005.png,direct_resize,0.21914975345134735,0,1845,0.0
+CAWI_010.png,padding,0.5815336108207703,0,11978,0.0
+CAWI_010.png,direct_resize,0.6391623020172119,99,16944,0.011617672944904065
+CODE_000.png,padding,0.09027145802974701,0,810,0.0
+CODE_000.png,direct_resize,0.09863866865634918,0,1152,0.0

@@ -1,0 +1,6 @@
+seed,train_images,val_images,test_images,train_val_patient_overlap,train_test_patient_overlap,val_test_patient_overlap,train_patients,val_patients,test_patients
+42,464,100,106,31,32,29,37,31,32
+123,464,100,106,31,33,28,37,31,33
+2025,464,100,106,31,31,26,37,31,31
+7,464,100,106,31,34,28,37,31,34
+99,464,100,106,32,33,29,37,32,33

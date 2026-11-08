@@ -1,0 +1,2 @@
+epoch,train_loss,val_loss,val_lesion_dice,val_normal_false_positive_rate,epoch_seconds
+1,0.6879552592491281,0.8095762515068055,0.2690784556279979,1.0,31.33

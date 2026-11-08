@@ -1,0 +1,30 @@
+experiment:
+  name: unet_replicate_pw5_fp30
+  seed: 42
+
+data:
+  split_csv: data/processed/bus_uclm_patient_split.csv
+  image_size: 256
+  batch_size: 4
+  num_workers: 0
+
+model:
+  name: unet
+  in_channels: 3
+  out_channels: 1
+  base_channels: 16
+
+training:
+  epochs: 10
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  early_stopping_patience: 10
+  use_amp: true
+
+loss:
+  bce_weight: 0.5
+  dice_weight: 0.5
+  pos_weight: 5.0
+
+output:
+  checkpoint_dir: results/unet_replicate_pw5_fp30

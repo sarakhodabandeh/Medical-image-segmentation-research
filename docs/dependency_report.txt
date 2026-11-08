@@ -1,0 +1,450 @@
+﻿C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:4: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:5: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:7: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:8: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:11: from src.datasets.preprocessing import resize_with_padding, resize_with_constant_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:50: config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:58: dataset = BUSUCLMDataset(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_epoch_probabilities.py:87: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:5: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:7: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:8: from scipy import ndimage
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:11: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:75: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_false_positive_components.py:84: dataset = BUSUCLMDataset(split="val")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_masks.py:2: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_masks.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_masks.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_masks.py:5: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_masks.py:6: from collections import Counter
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_masks.py:8: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_masks.py:9: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_masks.py:54: from scipy.ndimage import label
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:4: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:5: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:6: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:8: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:9: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:10: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:45: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_prediction_probabilities.py:54: dataset = BUSUCLMDataset(split="val")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:3: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:5: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:7: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:8: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:11: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:82: dataset = BUSUCLMDataset(split="val", split_path=split_csv)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\analyze_validation_thresholds.py:92: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\audit_patient_overlap.py:1: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\audit_patient_overlap.py:2: from itertools import combinations
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\audit_patient_overlap.py:3: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:2: import copy
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:7: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:8: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:11: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:12: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:65: config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:69: dataset = BUSUCLMDataset(split="val", split_path=split_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_mode_diagnostic.py:96: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:2: import copy
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:7: import torch.nn as nn
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:8: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:9: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:11: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:13: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:36: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:152: default_config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:155: train_ds = BUSUCLMDataset(split="train", split_path=split_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bn_recalibration.py:156: val_ds = BUSUCLMDataset(split="val", split_path=split_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bootstrap_patient_analysis.py:1: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bootstrap_patient_analysis.py:3: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\bootstrap_patient_analysis.py:4: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_patient_split.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_patient_split.py:3: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_raw_masks.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_raw_masks.py:3: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_raw_masks.py:4: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_raw_masks.py:5: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_raw_masks.py:7: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_raw_masks.py:8: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\check_raw_masks.py:9: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_hesn_geometry.py:2: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_hesn_geometry.py:3: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_hesn_geometry.py:4: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_hesn_geometry.py:5: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:5: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:6: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:7: import matplotlib
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:9: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:11: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:13: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:14: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:15: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:61: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\compare_preprocessing.py:70: dataset = BUSUCLMDataset(split="test")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_image_level_split.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_image_level_split.py:3: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_image_level_split.py:4: from sklearn.model_selection import train_test_split
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_matched_splits.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_matched_splits.py:3: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_matched_splits.py:4: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_paired_splits.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_paired_splits.py:2: import itertools
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_paired_splits.py:3: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_paired_splits.py:5: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_paired_splits.py:6: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_patient_level_splits.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_patient_level_splits.py:3: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\create_patient_level_splits.py:4: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\diagnose_unet.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\diagnose_unet.py:4: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\diagnose_unet.py:5: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\diagnose_unet.py:7: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\diagnose_unet.py:8: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\diagnose_unet.py:9: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\diagnose_unet.py:37: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\diagnose_unet.py:53: dataset = BUSUCLMDataset(split=split)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:5: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:6: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:8: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:9: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:13: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:55: dataset = BUSUCLMDataset(split="val")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_checkpoint.py:98: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:4: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:5: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:7: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:8: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:11: from src.datasets.preprocessing import resize_with_padding, resize_with_constant_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:127: base_config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:164: dataset = BUSUCLMDataset(split="test", split_path=split_csv)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test.py:172: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:4: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:5: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:7: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:8: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:11: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:15: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:210: base_config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:255: dataset = BUSUCLMDataset(split="test", split_path=split_csv)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_paired_test_valid_region.py:264: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:3: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:5: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:6: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:8: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:9: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:10: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:50: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_test.py:59: dataset = BUSUCLMDataset(split="test")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_thresholds.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_thresholds.py:4: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_thresholds.py:5: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_thresholds.py:6: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_thresholds.py:8: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_thresholds.py:9: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_thresholds.py:33: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\evaluate_thresholds.py:42: dataset = BUSUCLMDataset(split="val")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_dataset.py:2: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_dataset.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_dataset.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_dataset.py:5: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_dataset.py:6: from collections import Counter
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_dataset.py:8: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_dataset.py:9: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_dataset.py:10: from scipy import ndimage
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_hesn_metadata.py:2: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_hesn_metadata.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_hesn_metadata.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_metadata.py:2: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_metadata.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_metadata.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_metadata.py:5: from collections import defaultdict, Counter
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_mismatches.py:2: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_mismatches.py:3: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_mismatches.py:4: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_mismatches.py:6: import matplotlib
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_mismatches.py:8: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_mismatches.py:9: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_mismatches.py:10: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_patient_distribution.py:2: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_pixel_balance.py:2: from collections import Counter
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_pixel_balance.py:4: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_pixel_balance.py:5: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_pixel_balance.py:6: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_pixel_balance.py:8: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_pixel_balance.py:12: dataset = BUSUCLMDataset(split="train")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_test_samples.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_test_samples.py:4: import matplotlib
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_test_samples.py:6: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_test_samples.py:7: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_test_samples.py:8: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_test_samples.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_test_samples.py:25: dataset = BUSUCLMDataset(split="test")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\inspect_test_samples.py:38: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\leave_one_patient_out.py:1: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\leave_one_patient_out.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\patient_diagnostic.py:1: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\patient_diagnostic.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\rank_influential_patients.py:1: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\rank_influential_patients.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\review_mask_samples.py:2: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\review_mask_samples.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\review_mask_samples.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\review_mask_samples.py:5: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\review_mask_samples.py:7: import matplotlib
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\review_mask_samples.py:9: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\review_mask_samples.py:10: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\review_mask_samples.py:11: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\search_paired_split_candidates.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\search_paired_split_candidates.py:2: import itertools
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\search_paired_split_candidates.py:3: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\search_paired_split_candidates.py:5: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\search_paired_split_candidates.py:6: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\sensitivity_analysis.py:1: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\sensitivity_analysis.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_attention_unet.py:2: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_attention_unet.py:4: from src.models.attention_unet import AttentionUNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_attention_unet.py:10: model = AttentionUNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:2: import gc
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:3: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:5: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:6: import torch.nn as nn
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:7: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:8: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:11: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:12: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:50: config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:53: dataset = BUSUCLMDataset(split="train", split_path=resolve_path(args.split_csv))
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_batch_sizes.py:77: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_config.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_config.py:3: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_config.py:12: config = yaml.safe_load(file)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_dataset.py:2: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_dataset.py:3: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_dataset.py:5: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_dataset.py:8: dataset = BUSUCLMDataset()
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_gpu.py:1: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_preprocessing.py:2: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_preprocessing.py:4: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_splits.py:2: from collections import Counter
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_splits.py:4: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_splits.py:9: "train": BUSUCLMDataset(split="train"),
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_splits.py:10: "val": BUSUCLMDataset(split="val"),
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_splits.py:11: "test": BUSUCLMDataset(split="test"),
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_unet.py:2: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_unet.py:4: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\test_unet.py:12: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:3: import random
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:4: import time
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:5: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:7: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:8: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:9: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:10: from torch import nn
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:11: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:13: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:14: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:15: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:172: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:334: config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:338: train_dataset = BUSUCLMDataset(split="train", split_path=split_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_batch_size_comparison.py:339: val_dataset = BUSUCLMDataset(split="val", split_path=split_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:3: import random
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:4: import time
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:5: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:7: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:8: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:9: import torch.nn as nn
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:10: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:11: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:12: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:14: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:15: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:384: config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:388: train_ds = BUSUCLMDataset(split="train", split_path=split_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_norm_comparison.py:389: val_ds = BUSUCLMDataset(split="val", split_path=split_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:3: import random
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:4: import time
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:5: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:7: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:8: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:9: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:10: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:11: from torch import nn
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:12: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:14: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:15: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:16: from src.models.attention_unet import AttentionUNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:17: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:144: config = yaml.safe_load(file)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:161: train_dataset = BUSUCLMDataset(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet.py:164: val_dataset = BUSUCLMDataset(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:3: import random
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:4: import time
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:5: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:7: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:8: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:9: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:10: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:11: from torch import nn
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:12: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:14: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:15: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:16: from src.datasets.preprocessing import (
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:140: config = yaml.safe_load(file)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:157: train_dataset = BUSUCLMDataset(split="train", split_path=split_csv_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:158: val_dataset = BUSUCLMDataset(split="val", split_path=split_csv_path)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\train_unet_save_epochs.py:179: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_all_splits.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_all_splits.py:3: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_dataset.py:2: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_dataset.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_dataset.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_dataset.py:5: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_dataset.py:6: from collections import Counter
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_dataset.py:8: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\validate_dataset.py:9: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:1: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:3: import random
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:5: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:7: import matplotlib
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:10: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:11: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_dataset.py:12: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:4: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:5: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:6: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:7: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:9: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:10: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:37: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_errors.py:46: dataset = BUSUCLMDataset(split="val")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:4: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:5: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:7: from scipy import ndimage
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:8: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:11: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:68: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_false_positive_components.py:77: dataset = BUSUCLMDataset(split="val")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:1: import argparse
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:4: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:5: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:6: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:7: import yaml
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:8: from PIL import Image, ImageDraw
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:11: from src.datasets.preprocessing import resize_with_padding, resize_with_constant_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:82: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:121: base_config = yaml.safe_load(f)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_paired_predictions.py:148: dataset = BUSUCLMDataset(split="test", split_path=split_csv)
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:4: import matplotlib
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:6: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:8: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:9: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:11: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:34: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_predictions.py:43: dataset = BUSUCLMDataset(split="val")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:4: import matplotlib
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:6: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:7: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:8: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:10: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:11: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:12: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:35: dataset = BUSUCLMDataset(split="val")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_pw5_errors.py:56: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:2: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:4: import matplotlib
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:6: import matplotlib.pyplot as plt
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:7: import pandas as pd
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:8: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:9: from torch.utils.data import DataLoader
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:11: from src.datasets.bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:12: from src.datasets.preprocessing import resize_with_padding
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:13: from src.models.unet import UNet
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:77: model = UNet(
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\visualize_test_errors.py:86: dataset = BUSUCLMDataset(split="test")
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:2: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:3: import zipfile
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:4: from io import BytesIO
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:5: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:7: import numpy as np
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:8: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:9: from PIL import Image
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:10: from torch.utils.data import Dataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\bus_uclm.py:34: class BUSUCLMDataset(Dataset):
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\preprocessing.py:2: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\preprocessing.py:3: import torch.nn.functional as F
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\split_data.py:3: import csv
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\split_data.py:4: from pathlib import Path
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\split_data.py:5: from collections import defaultdict, Counter
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\split_data.py:7: from bus_uclm import BUSUCLMDataset
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\datasets\split_data.py:38: dataset = BUSUCLMDataset()
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\models\attention_unet.py:2: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\models\attention_unet.py:3: import torch.nn as nn
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\models\attention_unet.py:86: class AttentionUNet(nn.Module):
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\models\unet.py:2: import torch
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\models\unet.py:3: import torch.nn as nn
+C:\Users\yoossefkh\PycharmProjects\pythonProject\Segmentation\medical-segmentation-paper\src\models\unet.py:38: class UNet(nn.Module):
