@@ -1,211 +1,204 @@
-# The Impact of Patient-Level and Image-Level Data Splitting on Breast Ultrasound Lesion Segmentation Performance
+# Patient-Level vs Image-Level Data Splitting in Breast Ultrasound Lesion Segmentation
 
-This repository contains the code and experimental workflow for a study
-investigating how **image-level** and **patient-level** data splitting
-affect breast ultrasound lesion segmentation and false-positive
-predictions on normal images.
+Code and experimental workflow for a paired study of how the **unit of data
+partitioning** (image-level vs patient-level) affects breast ultrasound (BUS)
+lesion segmentation and **false-positive predictions on normal images**, using the
+BUS-UCLM dataset and a U-Net.
 
-The study uses the BUS-UCLM Breast Ultrasound Lesion Segmentation
-Dataset and a U-Net segmentation model. Its central design is a paired
-comparison: for each of five split configurations, the image-level and
-patient-level experiments use exactly the same validation and test
-images, with matched training-set sizes and class compositions. The key
-difference is whether other images from patients represented in the
-held-out sets are allowed to remain in the training set.
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![PyTorch](https://img.shields.io/badge/PyTorch-CUDA-orange)
+![Status](https://img.shields.io/badge/status-research%20code-lightgrey)
 
-------------------------------------------------------------------------
+> **Manuscript:** *Effect of Patient-Level versus Image-Level Data Splitting on Breast Ultrasound Lesion Segmentation and Normal-Image False Positives: A Paired Evaluation on the BUS-UCLM Dataset* (in preparation)
+> **Dataset:** BUS-UCLM (not included in this repository; see [Data access](#data-access))
 
-## Table of contents
+---
 
--   [Study overview](#study-overview)
--   [Dataset](#dataset)
--   [Experimental design](#experimental-design)
--   [Model and training
-    configuration](#model-and-training-configuration)
--   [Evaluation](#evaluation)
--   [Main findings reported in the
-    manuscript](#main-findings-reported-in-the-manuscript)
--   [Repository structure](#repository-structure)
--   [Reproduction workflow](#reproduction-workflow)
--   [Environment setup](#environment-setup)
--   [Data and output policy](#data-and-output-policy)
--   [Reproducibility notes and
-    interpretation](#reproducibility-notes-and-interpretation)
--   [Citation](#citation)
--   [License](#license)
+## At a glance
 
-## Study overview
+| | |
+|---|---|
+| **Question** | Does splitting by image vs by patient change lesion overlap (Dice, IoU) and normal-image false positives? |
+| **Design** | 5 paired splits (seeds `42, 123, 2025, 7, 99`); identical validation and test images for both strategies; matched training-set size and class composition |
+| **Model** | Standard U-Net (16-32-64-128 encoder, 256 bottleneck), 256 × 256 input |
+| **Data** | 670 image-mask pairs from 37 patients (170 benign, 90 malignant, 410 normal) after quality control |
+| **Analyses** | Full-canvas and valid-region evaluation, aggregation sensitivity, patient-level bootstrap (10,000 replicates), leave-one-patient-out |
 
-### Research question
+### Key findings
 
-How does the unit of data partitioning (image-level versus
-patient-level) affect:
+| Finding | Detail |
+|---|---|
+| Lesion overlap | No consistent winner: image-level was higher for Dice/IoU in 3 of 5 splits, patient-level in 2 |
+| Aggregation matters | The sign of the pooled Dice/IoU difference changed with the weighting scheme (per seed, per patient, per unique image) |
+| Normal-image false positives | Patient-level splitting was associated with higher FP measures in 4 of 5 splits, under all aggregation schemes and in every leave-one-patient-out iteration |
+| Bootstrap (patient-level) | FP area-fraction difference excluded zero (+0.048, 95% CI 0.022 to 0.076); Dice, IoU and FP image rate intervals included zero |
+| Valid-region analysis | Same pattern as the full-canvas evaluation |
 
--   lesion segmentation performance on benign and malignant images; and
--   false-positive predictions on normal images?
+These results are specific to this dataset, model and setup. They are **not** a universal
+ranking of splitting strategies. Absolute performance is modest (short training, small
+U-Net), so interpret results as relative comparisons.
+
+---
+
+## Contents
+
+- [Quick start](#quick-start)
+- [Study design](#study-design)
+- [Model and training](#model-and-training)
+- [Evaluation](#evaluation)
+- [Repository structure](#repository-structure)
+- [Reproduction workflow](#reproduction-workflow)
+- [Environment setup](#environment-setup)
+- [Data access](#data-access)
+- [Data and output policy](#data-and-output-policy)
+- [Reproducibility checklist](#reproducibility-checklist)
+- [Known caveats](#known-caveats)
+- [Citation](#citation)
+- [License](#license)
+
+---
+
+## Quick start
+
+Commands are for Windows PowerShell and run from the repository root.
+
+```powershell
+# 1. Environment
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# 2. Place BUS-UCLM locally (see "Data access"), then validate the existing paired splits
+.\.venv\Scripts\python.exe scripts\splits\validate_paired_splits_independent.py
+
+# 3. Evaluate trained checkpoints (full canvas + valid-region sensitivity)
+.\.venv\Scripts\python.exe scripts\evaluation\evaluate_paired_test.py
+.\.venv\Scripts\python.exe scripts\evaluation\evaluate_paired_test_valid_region.py
+
+# 4. Statistical and patient-aware analyses
+.\.venv\Scripts\python.exe scripts\analysis\sensitivity_analysis.py
+.\.venv\Scripts\python.exe scripts\analysis\bootstrap_patient_analysis.py
+.\.venv\Scripts\python.exe scripts\analysis\leave_one_patient_out.py
+```
+
+> **Before running anything:** check each script's configured input and output paths.
+> Some scripts create or overwrite split CSVs, manifests, reports, checkpoints or results.
+> **Back up existing artifacts first**, and do not rerun split generation or training over
+> completed experiments unless replacement is intended.
+
+### Pipeline overview
+
+```mermaid
+flowchart LR
+    A[BUS-UCLM raw data] --> B[Data audit and QC<br/>scripts/data_audit]
+    B --> C[Paired split generation and validation<br/>scripts/splits]
+    C --> D[U-Net training<br/>scripts/training]
+    D --> E[Evaluation: full canvas and valid region<br/>scripts/evaluation]
+    E --> F[Statistics: sensitivity, bootstrap, LOPO<br/>scripts/analysis]
+    E --> G[Visualization<br/>scripts/visualization]
+```
+
+---
+
+## Study design
 
 ### Dataset
 
-The experiments use the **BUS-UCLM Breast Ultrasound Lesion Segmentation
-Dataset**.
+BUS-UCLM originally contains 683 images from 38 patients. After quality control,
+13 image-mask pairs with unresolved spatial-dimension mismatches were excluded.
 
-The original dataset contains 683 images from 38 patients. Following
-quality control, 13 image-mask pairs with unresolved spatial-dimension
-mismatches were excluded. The final experimental dataset contains:
-
-| Category | Number of images |
+| Category | Images |
 |---|---:|
 | Benign | 170 |
 | Malignant | 90 |
 | Normal | 410 |
 | **Total** | **670** |
 
-Normal images have empty lesion masks. Patient identifiers are retained
-for patient-level splitting and patient-aware analyses.
+Normal images have empty lesion masks. Patient identifiers are retained for patient-level
+splitting and patient-aware analyses.
 
-**Dataset access:** The dataset is not included in this repository.
-Obtain it from the official BUS-UCLM publication/repository and follow
-its license and citation requirements. Do not commit the raw dataset or
-patient data to Git.
+### Paired splits
 
-### Experimental design
-
-Five paired split configurations are used, with seeds:
-
-`42, 123, 2025, 7, 99`
-
-For each seed, both splitting strategies share exactly the same
-validation and test images:
+For each seed, both strategies share exactly the same validation and test images:
 
 | Partition | Benign | Malignant | Normal | Total |
 |---|---:|---:|---:|---:|
 | Validation | 26 | 12 | 62 | 100 |
 | Test | 31 | 14 | 61 | 106 |
 
--   **Patient-level split:** all images from patients assigned to
-    validation or test are excluded from training.
--   **Image-level split:** the same validation and test images are used,
-    but other images from those held-out patients may remain in
-    training. Additional training images are selected to match the
-    patient-level training set's size and class composition.
+| Strategy | Definition |
+|---|---|
+| **Patient-level** | All images from patients assigned to validation or test are excluded from training. |
+| **Image-level** | Same validation and test images, but other images from those held-out patients may remain in training. Extra training images are drawn from other patients to match the patient-level training set's size and class composition. |
 
-The paired split validation workflow checks paired validation/test
-filenames, training-set size and class balance, and the intended
-patient-overlap properties.
+The image-level condition is therefore a *controlled leakage setting*, not an
+unconstrained random image split.
 
-The five test configurations are **not independent cohorts**: some
-patients occur in more than one seed. The analyses therefore treat
-seed-level comparisons descriptively and include patient-aware
-aggregation and sensitivity analyses.
+The split-validation workflow checks paired validation/test filenames, training-set size
+and class balance, and the intended patient-overlap properties.
 
-### Model and training configuration
+> **The five test configurations are not independent cohorts.** Some patients appear in more
+> than one seed. Seed-level comparisons are therefore treated descriptively, with
+> patient-aware aggregation and sensitivity analyses.
 
-The primary model is a standard U-Net for binary lesion segmentation:
+---
 
--   RGB input and one-channel output logits
--   Encoder channels: 16, 32, 64, 128
--   Bottleneck channels: 256
--   Double-convolution blocks with batch normalization and ReLU
--   Max pooling in the encoder, transposed convolutions and skip
-    connections in the decoder
+## Model and training
 
-Main training settings:
+A standard U-Net for binary lesion segmentation: RGB input, one-channel logits; encoder
+channels 16/32/64/128; 256-channel bottleneck; double-convolution blocks with batch
+normalisation and ReLU; max pooling in the encoder; transposed convolutions and skip
+connections in the decoder.
 
 | Setting | Value |
 |---|---|
-| Input size | 256 × 256 |
-| Image interpolation | Bilinear |
-| Mask interpolation | Nearest-neighbor |
-| Image padding | Replicate |
-| Mask padding | Constant zero |
+| Input size | 256 × 256 (aspect ratio preserved, centre-padded) |
+| Image interpolation / padding | Bilinear / replicate |
+| Mask interpolation / padding | Nearest-neighbour / constant zero |
+| Intensity scaling | `[0, 1]` (divide by 255) |
 | Batch size | 4 |
 | Maximum epochs | 10 |
-| Optimizer | Adam |
-| Learning rate | 0.001 |
-| Weight decay | 0.0001 |
-| Loss | 0.5 BCE-with-logits + 0.5 Dice loss |
-| Positive-class weight in BCE | 5 |
-| Mixed precision | Enabled for CUDA training |
+| Optimiser | Adam, learning rate 0.001, weight decay 0.0001 |
+| Loss | 0.5 × BCE-with-logits + 0.5 × Dice loss |
+| Positive-class weight (BCE) | 5 |
+| Mixed precision | Enabled for CUDA |
 | Checkpoint selection | Highest validation lesion macro-Dice at threshold 0.5 |
-| Early-stopping patience | 10 epochs |
+| Early-stopping patience | 10 epochs (see [Known caveats](#known-caveats)) |
+| Data augmentation | None |
+| Test threshold | Fixed at **0.5**; never tuned on the test set |
 
-Images are converted to RGB and scaled to `[0, 1]`. Masks are converted
-to binary single-channel masks. Aspect ratio is preserved during
-resizing; the resized image is center-padded to 256 × 256 using
-replicated border values, while masks are padded with zeros.
-
-The fixed probability threshold for the reported test evaluation is
-**0.5**. The test set is not used to tune this threshold or select
-checkpoints.
+---
 
 ## Evaluation
 
-### Primary evaluation metrics
+### Primary metrics (full 256 × 256 canvas, including padding)
 
-For lesion-containing (benign and malignant) images:
-
--   **Lesion macro-Dice**
--   **Lesion macro-IoU**
--   **Pixel recall**
-
-For normal images:
-
--   **Normal false-positive image rate:** proportion of normal images
-    with at least one predicted positive pixel.
--   **Mean normal false-positive area fraction:** mean proportion of
-    pixels predicted positive across normal images.
-
-The primary metrics are calculated on the full 256 × 256 processed
-canvas, including padding.
+| Subset | Metric | Meaning |
+|---|---|---|
+| Benign + malignant | Lesion macro-Dice, macro-IoU, pixel recall | Per-image values averaged over lesion test images |
+| Normal | **FP image rate** | Proportion of normal images with at least one predicted positive pixel |
+| Normal | **FP area fraction** | Mean fraction of pixels predicted positive across normal images |
 
 ### Sensitivity and patient-aware analyses
 
-The study additionally includes:
+1. **Valid-region evaluation:** recomputes metrics inside the resized source-image region only
+   (excluding padding) and quantifies predictions falling in padding separately.
+2. **Aggregation sensitivity:** equal weight per seed, per unique patient, per unique test image.
+3. **Patient-level bootstrap:** resamples unique patients with replacement (10,000 replicates);
+   percentile 95% confidence intervals.
+4. **Leave-one-patient-out (LOPO):** repeats the paired comparison after excluding each patient.
 
-1.  **Valid-region evaluation:** recomputes metrics only within the
-    resized source-image region, excluding artificial padding, and
-    separately quantifies predictions in padded regions.
-2.  **Aggregation sensitivity:** compares equal weighting per seed, per
-    unique patient, and per unique test image.
-3.  **Patient-level bootstrap:** resamples unique patients with
-    replacement for 10,000 replicates and reports percentile-based 95%
-    confidence intervals.
-4.  **Leave-one-patient-out (LOPO):** repeats the paired comparison
-    after excluding each patient in turn.
+The bootstrap "proportion of positive differences" is **descriptive, not a p-value**. No
+conventional independent-samples test is applied to the five seed-level comparisons.
 
-The bootstrap proportion of positive differences is descriptive and is
-**not a p-value**. No conventional independent-samples test is applied
-to the five seed-level comparisons.
-
-## Main findings reported in the manuscript
-
-The manuscript reports that:
-
--   Neither splitting strategy consistently outperformed the other for
-    lesion Dice or IoU across the five paired configurations.
--   The direction of the overall lesion Dice/IoU difference depended on
-    the aggregation strategy.
--   Patient-level splitting was associated with higher normal-image
-    false-positive measures in four of five configurations.
--   The patient-level bootstrap confidence interval for mean normal
-    false-positive area fraction excluded zero, while the intervals for
-    lesion Dice, lesion IoU, and normal false-positive image rate
-    included zero.
--   The valid-region sensitivity analysis showed a broadly similar
-    pattern to the full-canvas evaluation.
-
-These findings are specific to this dataset, model, and experimental
-setup; they should not be interpreted as a universal ranking of
-splitting strategies.
+---
 
 ## Repository structure
 
-The project is organized by function. The following is the intended
-high-level layout; local data, checkpoints, generated results, and the
-virtual environment remain on the development machine and are not
-intended to be committed.
+Intended high-level layout. Local data, checkpoints, generated results and the virtual
+environment stay on the development machine and are not meant to be committed.
 
-``` text
+```text
 medical-segmentation-paper/
 ├── configs/
 │   └── unet.yaml
@@ -233,290 +226,257 @@ medical-segmentation-paper/
 ├── tests/
 ├── README.md
 ├── requirements.txt
-└── .gitignore               # Add before publishing to GitHub
+└── .gitignore
 ```
-
-### Script categories
 
 | Directory | Purpose |
 |---|---|
-| `scripts/data_audit/` | Inspect dataset metadata, image-mask pairs, dimensions, masks, labels and patient distribution. |
-| `scripts/splits/` | Create, search and validate image-level, patient-level and paired split definitions. |
-| `scripts/training/` | Train U-Net models and run training comparisons. |
-| `scripts/evaluation/` | Evaluate checkpoints and paired test sets, including valid-region sensitivity evaluation. |
-| `scripts/analysis/` | Run statistical, patient-aware, probability, false-positive and BatchNorm analyses. |
-| `scripts/visualization/` | Visualize dataset samples, predictions, errors and paired comparisons. |
-| `scripts/diagnostics/` | Check project paths, GPU availability and batch-size behavior. |
-| `tests/` | Focused tests for configuration, dataset, preprocessing, splits and model definitions. |
-| `src/` | Reusable dataset, preprocessing and model implementation. |
-| `configs/` | Experiment configuration files. |
-| `docs/` | Project structure and dependency reports. |
+| `scripts/data_audit/` | Inspect metadata, image-mask pairs, dimensions, masks, labels and patient distribution |
+| `scripts/splits/` | Create, search and validate image-level, patient-level and paired splits |
+| `scripts/training/` | Train U-Net models and run training comparisons |
+| `scripts/evaluation/` | Evaluate checkpoints and paired test sets (full canvas and valid region) |
+| `scripts/analysis/` | Statistical, patient-aware, probability, false-positive and BatchNorm analyses |
+| `scripts/visualization/` | Dataset samples, predictions, errors and paired comparisons |
+| `scripts/diagnostics/` | Project paths, GPU availability, batch-size behaviour |
+| `src/` | Reusable dataset, preprocessing and model code |
+| `tests/` | Tests for configuration, dataset, preprocessing, splits and model definitions |
+| `configs/` | Experiment configuration |
+| `docs/` | Project structure and dependency reports |
+
+---
 
 ## Reproduction workflow
 
-Run commands from the repository root. On Windows PowerShell, use the
-virtual environment's Python executable as shown below. The commands
-reference the current organized script locations.
-
-**Important:** Review the input paths and configuration of each script
-before running it. Some scripts create or overwrite CSV manifests,
-reports, checkpoints, or generated outputs. Do not rerun
-split-generation or training commands over existing experiment artifacts
-unless the outputs have been backed up and replacement is intended.
-
 ### 1. Dataset preparation and quality control
 
-Relevant scripts are in `scripts/data_audit/`, including:
+Scripts in `scripts/data_audit/`: `inspect_dataset.py`, `validate_dataset.py`,
+`analyze_masks.py`, `inspect_mismatches.py`, `review_mask_samples.py`. They check
+image-mask consistency, class distribution, empty masks, mask geometry and visual
+examples. The final dataset excludes the 13 pairs with unresolved dimension mismatches.
 
--   `inspect_dataset.py`
--   `validate_dataset.py`
--   `analyze_masks.py`
--   `inspect_mismatches.py`
--   `review_mask_samples.py`
-
-These scripts inspect image-mask consistency, class distribution, empty
-masks, mask geometry, and visual examples. The final experimental
-dataset excludes the 13 image-mask pairs with unresolved dimension
-mismatches.
-
-Run an individual audit script from the repository root, for example:
-
-``` powershell
+```powershell
 .\.venv\Scripts\python.exe scripts\data_audit\inspect_dataset.py
 ```
 
-Check each script's configured dataset path before execution.
+### 2. Construct and validate paired splits
 
-### 2. Construct paired splits
-
-The split workflow scripts are in `scripts/splits/`.
-
-Run the candidate search before generating paired splits:
-
-``` powershell
+```powershell
 .\.venv\Scripts\python.exe scripts\splits\search_paired_split_candidates.py
 .\.venv\Scripts\python.exe scripts\splits\create_paired_splits.py
-```
-
-The split-generation scripts expect the patient metadata/split input and
-candidate CSV at the paths configured in the scripts. Review those paths
-and the dataset metadata requirements before running.
-
-The paired split files are written under `data/processed/paired_splits/`
-and include patient-level and image-level CSVs for each seed, together
-with validation and manifest reports.
-
-**Do not run the split generator casually:** it can overwrite existing
-split CSVs, manifests and reports. Existing split artifacts should be
-backed up before regeneration.
-
-The independent paired-split validation script is:
-
-``` powershell
 .\.venv\Scripts\python.exe scripts\splits\validate_paired_splits_independent.py
 ```
 
-This validator checks the existing paired split artifacts. Review its
-output before proceeding.
+Outputs are written to `data/processed/paired_splits/` (patient-level and image-level CSVs
+per seed, plus validation and manifest reports). **The generator can overwrite existing
+split files**, so back them up before regenerating. Run the independent validator and
+review its output before training.
 
 ### 3. Train U-Net models
 
-The standard training script is located at
-`scripts/training/train_unet.py`.
+Training script: `scripts/training/train_unet.py`. It locates the project root automatically
+(the first parent folder containing `configs/`, `src/` and `requirements.txt`), so it can be
+run from any working directory, but run from the repository root for consistent relative paths.
 
-To inspect its available command-line options:
+| Argument | Required | Default | Description |
+|---|---|---|---|
+| `--split-csv` | yes | none | Split CSV with `train` and `val` partitions (relative paths resolve from the project root) |
+| `--output-dir` | yes | none | Output folder for `best_model.pt` and `training_log.csv` |
+| `--seed` | no | `experiment.seed` in the config | Random seed |
+| `--config` | no | `configs/unet.yaml` | YAML config (image size, batch size, epochs, loss weights, learning rate, etc.) |
+| `--epochs` | no | `training.epochs` in the config | Overrides the epoch count |
+| `--padding` | no | `replicate` | `replicate` or `constant` image padding. The study used the default |
+| `--model` | no | `unet` | `unet` or `attention_unet`. The study used `unet` |
 
-``` powershell
-.\.venv\Scripts\python.exe scripts\training\train_unet.py --help
+Train one model for every seed and split condition. Replace the CSV filename pattern with the
+actual files in `data/processed/paired_splits/`:
+
+```powershell
+$seeds = 42, 123, 2025, 7, 99
+foreach ($seed in $seeds) {
+    foreach ($split in "image", "patient") {
+        .\.venv\Scripts\python.exe scripts\training\train_unet.py `
+            --split-csv "data\processed\paired_splits\<your-${split}-split-file-for-seed-${seed}>.csv" `
+            --seed $seed `
+            --output-dir "results\paired_full_${split}_${seed}"
+    }
+}
 ```
 
-Use the arguments supported by the script to select the split CSV, seed,
-configuration and output directory. The paired experiment checkpoints
-are expected by the evaluation scripts under:
+Run a single model, for example:
 
-``` text
+```powershell
+.\.venv\Scripts\python.exe scripts\training\train_unet.py `
+    --split-csv data\processed\paired_splits\<split-file>.csv `
+    --seed 42 `
+    --output-dir results\paired_full_patient_42
+```
+
+Each run writes to `--output-dir`:
+
+| File | Content |
+|---|---|
+| `best_model.pt` | Checkpoint with the highest validation lesion macro-Dice at threshold 0.5 (also stores epoch, config, seed, split CSV, padding mode and selection rule) |
+| `training_log.csv` | Per epoch: train loss, validation loss, validation lesion Dice and normal FP rate at 0.5, image counts, epoch time |
+
+The evaluation scripts expect checkpoints at:
+
+```text
 results/paired_full_{image|patient}_{seed}/best_model.pt
 ```
 
-Here, `image` and `patient` denote the two split conditions, and
-`{seed}` is one of `42`, `123`, `2025`, `7`, or `99`.
+where `{seed}` is one of `42`, `123`, `2025`, `7`, `99`.
 
-`train_unet_save_epochs.py` is an additional U-Net training variant that
-also saves per-epoch checkpoints for validation/epoch diagnostics. It is
-not interchangeable with the standard trainer's output layout unless the
-corresponding output paths are configured consistently.
+**Safety behaviour:** the trainer raises `FileExistsError` if `best_model.pt` already exists in
+the chosen `--output-dir`, so it will not overwrite a finished run. Choose a new folder to retrain.
 
-Training commands can consume substantial GPU time and write
-checkpoints. Confirm configuration, input splits and output paths before
-starting a training run.
+Training uses a fixed seed for Python, NumPy and PyTorch, deterministic cuDNN, and a seeded
+DataLoader generator. Validation reports lesion macro-Dice and the normal-image FP rate at
+0.5; only the Dice is used for checkpoint selection.
 
-### 4. Evaluate the paired test sets
+`train_unet_save_epochs.py` is a variant that also saves per-epoch checkpoints for epoch
+diagnostics. Its output layout differs from the standard trainer unless paths are configured
+consistently.
 
-Primary full-canvas evaluation:
+Training can take substantial GPU time. Confirm the config, split CSV and output path before
+starting.
 
-``` powershell
+### 4. Evaluate paired test sets
+
+```powershell
 .\.venv\Scripts\python.exe scripts\evaluation\evaluate_paired_test.py
-```
-
-Valid-region sensitivity evaluation:
-
-``` powershell
 .\.venv\Scripts\python.exe scripts\evaluation\evaluate_paired_test_valid_region.py
 ```
 
-The evaluation scripts use a fixed threshold of 0.5 and expect the
-paired checkpoints and split CSVs to exist at the paths specified in the
-scripts.
+| Evaluator | Per-image output |
+|---|---|
+| Full canvas | `results/test_evaluation/test_per_image_metrics.csv` |
+| Valid region | `results/test_evaluation_valid_region/test_per_image_metrics_valid_region.csv` |
 
-The full-canvas evaluator writes the per-image metrics file:
+Both use a fixed threshold of 0.5 and also write summary and paired-comparison CSVs in their
+configured output directories.
 
-``` text
-results/test_evaluation/test_per_image_metrics.csv
-```
+### 5. Statistical and sensitivity analyses
 
-The valid-region evaluator writes a separate per-image file:
-
-``` text
-results/test_evaluation_valid_region/test_per_image_metrics_valid_region.csv
-```
-
-The evaluation scripts also write summary and paired-comparison CSV
-files in their configured output directories.
-
-### 5. Run statistical and sensitivity analyses
-
-The following analyses consume the full-canvas per-image test metrics
-unless otherwise configured:
-
-``` powershell
+```powershell
 .\.venv\Scripts\python.exe scripts\analysis\sensitivity_analysis.py
 .\.venv\Scripts\python.exe scripts\analysis\bootstrap_patient_analysis.py
 .\.venv\Scripts\python.exe scripts\analysis\leave_one_patient_out.py
 ```
 
-The expected full-canvas input is:
+These read the **full-canvas** file `results/test_evaluation/test_per_image_metrics.csv`.
+They do **not** analyse valid-region metrics unless their input paths are changed.
+Other analysis scripts (validation thresholds, prediction probabilities, preprocessing,
+BatchNorm behaviour, influential patients, individual errors) are supplementary and not
+required for the primary paired comparison.
 
-``` text
-results/test_evaluation/test_per_image_metrics.csv
-```
+### 6. Visualize errors
 
-The valid-region evaluator produces a separate set of CSV outputs. The
-statistical scripts above should not be assumed to analyze valid-region
-metrics unless their input paths are explicitly changed.
+`scripts/visualization/visualize_test_errors.py` reads
+`results/test_evaluation/test_per_image.csv`, a **different file** from the evaluator's
+`test_per_image_metrics.csv`, and expects its configured checkpoint to exist. Confirm both
+are present first. Other visualization scripts may need specific checkpoints or
+intermediate results; check their configured paths.
 
-Other diagnostic scripts examine validation thresholds, prediction
-probabilities, preprocessing, BatchNorm behavior, influential patients
-and individual errors. These are supplementary analyses and are not
-required to reproduce the primary paired comparison.
-
-### 6. Visualize test errors
-
-The `scripts/visualization/visualize_test_errors.py` script reads:
-
-``` text
-results/test_evaluation/test_per_image.csv
-```
-
-This is a separate input from the primary paired evaluator's
-`test_per_image_metrics.csv`. The visualization script also expects its
-configured checkpoint to exist. Confirm that both files are present
-before running it.
-
-Other visualization scripts may require specific checkpoints, datasets
-or intermediate results. Check their configured paths before execution.
+---
 
 ## Environment setup
 
-Python 3.12 was used during development. The project uses PyTorch and
-CUDA for GPU training.
+Developed with Python 3.12, PyTorch and CUDA.
 
-Create and activate a virtual environment (Windows PowerShell):
-
-``` powershell
+```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-If PowerShell blocks activation, run the environment's Python executable
-directly:
+If PowerShell blocks activation, call the environment's interpreter directly:
 
-``` powershell
+```powershell
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Install a PyTorch build compatible with your operating system, NVIDIA
-driver, and CUDA runtime by following the official PyTorch installation
-selector. The development environment used a CUDA-enabled PyTorch build
-(`torch 2.11.0+cu128`), but this exact build may not be appropriate for
-every machine.
+Install a PyTorch build matching your OS, NVIDIA driver and CUDA runtime using the official
+PyTorch selector. Development used `torch 2.11.0+cu128`; this exact build may not suit every
+machine. Verify the install:
 
-Check the installation:
-
-``` powershell
+```powershell
 .\.venv\Scripts\python.exe -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
 ```
 
+---
+
+## Data access
+
+The dataset is **not included**. Obtain BUS-UCLM from its official publication/repository
+([Vallez et al., *Scientific Data* 2025](https://doi.org/10.1038/s41597-025-04562-3)),
+follow its license and citation requirements, and place it under `data/raw/` (or update the
+relevant path configuration). Never commit raw data or patient information to Git.
+
 ## Data and output policy
 
-The repository should contain code, configuration, documentation, and
-(where appropriate) small split-definition/manifest files. It should
-**not** contain:
+The repository should contain code, configuration, documentation and, where appropriate,
+small split-definition and manifest files. It should **not** contain:
 
--   the raw BUS-UCLM images or masks;
--   local virtual environments such as `.venv/`;
--   model checkpoints (`.pt`, `.pth`);
--   large generated result directories or temporary logs;
--   Python cache files such as `__pycache__/` and `*.pyc`;
--   IDE-specific local settings.
+- raw BUS-UCLM images or masks;
+- virtual environments (`.venv/`);
+- model checkpoints (`.pt`, `.pth`);
+- large result directories or temporary logs;
+- `__pycache__/` and `*.pyc`;
+- IDE-specific settings.
 
-Keep the dataset in the local location expected by the dataset loader,
-or update the relevant configuration/path arguments. Do not publish
-patient-identifying information or files that are not permitted by the
-dataset license.
+Before publishing, review `git status` and confirm that no raw data, checkpoints, local
+environment files, private metadata or restricted artifacts are staged.
 
-Before publishing, review `git status` and confirm that no raw data,
-checkpoints, local environment files, private metadata or other
-restricted artifacts are staged.
+---
 
-## Reproducibility notes and interpretation
+## Reproducibility checklist
 
--   Use the same paired validation and test images for both split
-    strategies.
--   Preserve the matched training-set size and class composition.
--   Keep the threshold fixed at 0.5 for test evaluation.
--   Do not treat the five seeds as five independent patient cohorts.
--   Distinguish full-canvas primary metrics from valid-region
-    sensitivity metrics.
--   The statistical scripts described above consume the full-canvas
-    per-image metrics file; valid-region statistical summaries require a
-    separate, explicitly configured analysis.
--   Record the Python, PyTorch, CUDA, and dependency versions used for
-    each reproduction.
--   Preserve the original split manifests, reports and checkpoints for
-    each completed experiment.
+- [ ] Same paired validation and test images for both strategies
+- [ ] Matched training-set size and class composition
+- [ ] Fixed threshold of 0.5 for test evaluation
+- [ ] Five seeds **not** treated as five independent patient cohorts
+- [ ] Full-canvas primary metrics kept distinct from valid-region sensitivity metrics
+- [ ] Statistical scripts pointed at the intended per-image metrics file
+- [ ] Python, PyTorch, CUDA and dependency versions recorded for each reproduction
+- [ ] Original split manifests, reports and checkpoints preserved for each completed experiment
+
+## Known caveats
+
+- **Early stopping:** patience is 10 epochs and the maximum is also 10. Because the first epoch
+  always counts as an improvement, early stopping cannot trigger and all models train for the
+  full 10 epochs.
+- **Mixed precision:** the trainer uses `autocast` on CUDA without a gradient scaler.
+- **Modest absolute performance:** small U-Net, short training, no augmentation. Several
+  normal-image FP rates are high, possibly influenced by the BCE positive-class weight of 5.
+  Treat findings as relative differences between strategies.
+- **One model per strategy per seed:** split composition and training randomness are
+  confounded, and the bootstrap does not capture training variability.
+- **Single dataset, single architecture:** results may not transfer to other datasets,
+  models or loss functions.
+
+---
 
 ## Citation
 
-If you use this repository or reproduce the experiments, cite the
-associated manuscript when it is published. Please also cite the
-BUS-UCLM dataset paper:
+If you use this repository or reproduce the experiments, please cite the associated
+manuscript once published (currently in preparation) and the dataset paper:
 
-Vallez N, Bueno G, Deniz O, et al. **BUS-UCLM: Breast ultrasound lesion
-segmentation dataset.** *Scientific Data*. 2025;12:242.\
-https://doi.org/10.1038/s41597-025-04562-3
+> Vallez N, Bueno G, Deniz O, et al. BUS-UCLM: Breast ultrasound lesion segmentation
+> dataset. *Scientific Data*. 2025;12:242. https://doi.org/10.1038/s41597-025-04562-3
 
-The manuscript also references the original U-Net paper:
+The U-Net architecture follows:
 
-Ronneberger O, Fischer P, Brox T. **U-Net: Convolutional Networks for
-Biomedical Image Segmentation.** MICCAI 2015.\
-https://doi.org/10.1007/978-3-319-24574-4_28
+> Ronneberger O, Fischer P, Brox T. U-Net: Convolutional networks for biomedical image
+> segmentation. MICCAI 2015. https://doi.org/10.1007/978-3-319-24574-4_28
 
 ## License
 
-No repository license is specified here. Add a license only after
-deciding which license is appropriate for the code and confirming
-compatibility with the dataset's terms. The dataset's license and the
-code license are separate.
+**This repository does not yet have a license.** Until one is added, the code is under default
+copyright (all rights reserved), which means others may view it but do not have permission to
+reuse, modify or redistribute it. A license will be added before or alongside publication of the
+associated manuscript.
+
+The BUS-UCLM dataset is not included and is governed by its own license and terms of use.
+The dataset license and any future code license are separate.
