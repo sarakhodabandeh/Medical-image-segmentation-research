@@ -116,7 +116,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create paired visual comparisons for selected BUS-UCLM test images."
     )
-    parser.add_argument("--config", default="configs/unet.yaml")
+    parser.add_argument("--config", default="configs/paper_unet.yaml")
     parser.add_argument("--splits-dir", default="data/processed/paired_splits")
     parser.add_argument("--results-dir", default="results")
     parser.add_argument("--output-dir", default="results/test_visualizations")

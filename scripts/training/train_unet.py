@@ -127,7 +127,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Train U-Net using a specified BUS-UCLM split CSV."
     )
-    parser.add_argument("--config", default="configs/unet.yaml")
+    parser.add_argument("--config", default="configs/paper_unet.yaml")
     parser.add_argument("--split-csv", required=True)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--output-dir", required=True)
