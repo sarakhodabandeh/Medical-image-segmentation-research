@@ -284,11 +284,13 @@ def main():
     parser.add_argument("--candidate-pool", type=int, default=20)
     parser.add_argument("--seed", type=int, default=20261030)
     parser.add_argument("--overlap-penalty", type=float, default=0.01)
+    parser.add_argument("--output-dir", default=str(OUTPUT_DIR),
+                        help="Folder for the generated split CSVs and reports.")
     args = parser.parse_args()
 
     master_path = project_path(args.master)
     candidates_path = project_path(args.candidates)
-    output_dir = project_path(OUTPUT_DIR)
+    output_dir = project_path(args.output_dir)
 
     if not master_path.exists():
         raise FileNotFoundError(master_path)
