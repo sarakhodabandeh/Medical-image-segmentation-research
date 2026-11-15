@@ -41,3 +41,5 @@ results/**/*.png
 
 docs/project_structure.txt
 
+
+*.egg-info/

@@ -14,7 +14,7 @@ DEFAULT_CANDIDATES = (
     "data/processed/paired_split_candidates/top_paired_split_candidates.csv"
 )
 
-OUTPUT_DIR = "../../data/processed/paired_splits"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "paired_splits"
 LABELS = ["Benign", "Malignant", "Normal"]
 TARGET_VAL = {"Benign": 26, "Malignant": 12, "Normal": 62}
 TARGET_TEST = {"Benign": 31, "Malignant": 14, "Normal": 61}

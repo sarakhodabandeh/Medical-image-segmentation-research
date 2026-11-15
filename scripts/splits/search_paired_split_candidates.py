@@ -9,7 +9,7 @@ import pandas as pd
 from src.utils.paths import PROJECT_ROOT
 
 DEFAULT_INPUT = "data/processed/bus_uclm_patient_split.csv"
-OUTPUT_DIR = "../../data/processed/paired_split_candidates"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "paired_split_candidates"
 
 # Reference class counts from the previously established matched image split.
 TARGET_VAL = {"Benign": 26, "Malignant": 12, "Normal": 62}
