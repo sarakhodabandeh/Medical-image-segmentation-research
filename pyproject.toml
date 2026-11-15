@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bus_splitting"
+version = "0.1.0"
+description = "Patient-level vs image-level data splitting in breast ultrasound lesion segmentation (BUS-UCLM)"
+readme = "README.md"
+requires-python = ">=3.12"
+# Runtime dependencies are listed in requirements.txt (torch is installed separately,
+# see the README for the tested version).
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
