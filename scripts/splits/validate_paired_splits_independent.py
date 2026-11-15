@@ -1,3 +1,4 @@
+import argparse
 from itertools import combinations
 from pathlib import Path
 
@@ -10,7 +11,7 @@ TARGET_VAL = {"Benign": 26, "Malignant": 12, "Normal": 62}
 TARGET_TEST = {"Benign": 31, "Malignant": 14, "Normal": 61}
 
 
-from src.utils.paths import PROJECT_ROOT
+from src.utils.paths import PROJECT_ROOT, project_path
 
 SPLIT_DIR = PROJECT_ROOT / "data" / "processed" / "paired_splits"
 REPORT_PATH = SPLIT_DIR / "independent_paired_split_audit.csv"
@@ -21,9 +22,9 @@ def patient_set(frame, split):
     return set(frame.loc[frame["split"] == split, "patient_id"].dropna())
 
 
-def validate_one_seed(seed):
-    patient_path = SPLIT_DIR / f"patient_level_seed_{seed}.csv"
-    image_path = SPLIT_DIR / f"image_level_seed_{seed}.csv"
+def validate_one_seed(seed, split_dir):
+    patient_path = split_dir / f"patient_level_seed_{seed}.csv"
+    image_path = split_dir / f"image_level_seed_{seed}.csv"
 
     if not patient_path.is_file() or not image_path.is_file():
         raise FileNotFoundError(
@@ -138,15 +139,30 @@ def validate_one_seed(seed):
     }
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Independently audit the paired image-level and patient-level splits."
+    )
+    parser.add_argument(
+        "--split-dir", default=str(SPLIT_DIR),
+        help="Folder with the paired split CSVs and manifest; the audit report is written here.",
+    )
+    return parser.parse_args()
+
+
 def main():
-    if not SPLIT_DIR.is_dir():
+    args = parse_args()
+    split_dir = project_path(args.split_dir)
+    manifest_path = split_dir / MANIFEST_PATH.name
+    report_path = split_dir / REPORT_PATH.name
+    if not split_dir.is_dir():
         raise FileNotFoundError(
-            f"Paired split directory not found: {SPLIT_DIR}. "
+            f"Paired split directory not found: {split_dir}. "
             "Generate the paired splits first."
         )
 
-    if MANIFEST_PATH.is_file():
-        manifest = pd.read_csv(MANIFEST_PATH)
+    if manifest_path.is_file():
+        manifest = pd.read_csv(manifest_path)
         if "seed" not in manifest.columns:
             raise ValueError("Paired split manifest is missing the seed column")
         manifest_seeds = sorted(manifest["seed"].astype(int).tolist())
@@ -155,13 +171,13 @@ def main():
                 f"Manifest seeds {manifest_seeds} do not match {EXPECTED_SEEDS}"
             )
 
-    reports = [validate_one_seed(seed) for seed in EXPECTED_SEEDS]
+    reports = [validate_one_seed(seed, split_dir) for seed in EXPECTED_SEEDS]
     report = pd.DataFrame(reports)
-    report.to_csv(REPORT_PATH, index=False)
+    report.to_csv(report_path, index=False)
 
     print(report.to_string(index=False))
     print(f"\nAll {len(EXPECTED_SEEDS)} paired split configurations passed.")
-    print("Independent audit report:", REPORT_PATH)
+    print("Independent audit report:", report_path)
 
 
 if __name__ == "__main__":
