@@ -1,17 +1,35 @@
+import argparse
 from itertools import combinations
 from pathlib import Path
 
 import pandas as pd
 
 
-from src.utils.paths import PROJECT_ROOT
+from src.utils.paths import PROJECT_ROOT, project_path
 
 INPUT = PROJECT_ROOT / "results" / "test_evaluation" / "test_per_image_metrics.csv"
 OUTPUT = PROJECT_ROOT / "results" / "patient_overlap_audit"
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Audit patient overlap between the image-level and patient-level splits."
+    )
+    parser.add_argument(
+        "--metrics-csv", default=str(INPUT),
+        help="Per-image metrics CSV from evaluate_paired_test.py.",
+    )
+    parser.add_argument(
+        "--output-dir", default=str(OUTPUT), help="Folder for the audit CSVs."
+    )
+    return parser.parse_args()
+
+
 def main():
-    df = pd.read_csv(INPUT)
+    args = parse_args()
+    input_path = project_path(args.metrics_csv)
+    output_dir = project_path(args.output_dir)
+    df = pd.read_csv(input_path)
     required = {"seed", "split_type", "filename", "patient_id", "label"}
     missing = required - set(df.columns)
     if missing:
@@ -21,7 +39,7 @@ def main():
         ["seed", "split_type", "filename", "patient_id", "label"]
     ].drop_duplicates()
 
-    OUTPUT.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     for split in ("image", "patient"):
         subset = test[test["split_type"] == split]
@@ -57,7 +75,7 @@ def main():
         print("\\nPairwise overlap:")
         print(overlap.to_string(index=False))
         overlap.to_csv(
-            OUTPUT / f"patient_overlap_{split}.csv",
+            output_dir / f"patient_overlap_{split}.csv",
             index=False,
         )
 
