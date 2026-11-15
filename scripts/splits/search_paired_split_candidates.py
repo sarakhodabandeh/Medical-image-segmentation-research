@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 
-from src.utils.paths import PROJECT_ROOT
+from src.utils.paths import PROJECT_ROOT, project_path
 
 DEFAULT_INPUT = "data/processed/bus_uclm_patient_split.csv"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "paired_split_candidates"
@@ -111,6 +111,7 @@ def main():
     parser.add_argument("--trials", type=int, default=50000)
     parser.add_argument("--seed", type=int, default=20261030)
     parser.add_argument("--top", type=int, default=20)
+    parser.add_argument("--output-dir", default=str(OUTPUT_DIR), help="Folder for the candidate CSV.")
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -266,7 +267,7 @@ def main():
         )
 
     result = pd.DataFrame(candidates).sort_values("score").head(args.top)
-    out_dir = PROJECT_ROOT / OUTPUT_DIR
+    out_dir = project_path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "top_paired_split_candidates.csv"
     result.to_csv(out_path, index=False)
