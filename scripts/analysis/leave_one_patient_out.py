@@ -1,7 +1,8 @@
+import argparse
 import pandas as pd
 from pathlib import Path
 
-from src.utils.paths import PROJECT_ROOT
+from src.utils.paths import PROJECT_ROOT, project_path
 
 INPUT = (
     PROJECT_ROOT
@@ -11,11 +12,28 @@ INPUT = (
 )
 
 OUTPUT = PROJECT_ROOT / "results" / "leave_one_patient_out"
-OUTPUT.mkdir(parents=True, exist_ok=True)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Leave-one-patient-out analysis of paired split-strategy differences."
+    )
+    parser.add_argument(
+        "--metrics-csv", default=str(INPUT),
+        help="Per-image metrics CSV from evaluate_paired_test.py.",
+    )
+    parser.add_argument(
+        "--output-dir", default=str(OUTPUT), help="Folder for the output CSVs."
+    )
+    return parser.parse_args()
 
 
 def main():
-    df = pd.read_csv(INPUT)
+    args = parse_args()
+    input_path = project_path(args.metrics_csv)
+    output_dir = project_path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    df = pd.read_csv(input_path)
 
     keys = ["seed", "filename", "patient_id", "label"]
 
@@ -140,17 +158,17 @@ def main():
     summary_df = pd.DataFrame(all_summary)
 
     lopo_df.to_csv(
-        OUTPUT / "leave_one_patient_out_all.csv",
+        output_dir / "leave_one_patient_out_all.csv",
         index=False
     )
     summary_df.to_csv(
-        OUTPUT / "leave_one_patient_out_summary.csv",
+        output_dir / "leave_one_patient_out_summary.csv",
         index=False
     )
 
     print("\nSaved:")
-    print(OUTPUT / "leave_one_patient_out_all.csv")
-    print(OUTPUT / "leave_one_patient_out_summary.csv")
+    print(output_dir / "leave_one_patient_out_all.csv")
+    print(output_dir / "leave_one_patient_out_summary.csv")
 
     print("\nSummary table:")
     print(summary_df.to_string(index=False))

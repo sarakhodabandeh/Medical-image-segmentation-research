@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +10,7 @@ import pandas as pd
 # --------------------------------------------------
 
 
-from src.utils.paths import PROJECT_ROOT
+from src.utils.paths import PROJECT_ROOT, project_path
 
 INPUT = (
     PROJECT_ROOT
@@ -26,12 +27,39 @@ RANDOM_SEED = 20261102
 CONFIDENCE = 0.95
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Patient-level cluster bootstrap of paired split-strategy differences."
+    )
+    parser.add_argument(
+        "--metrics-csv", default=str(INPUT),
+        help="Per-image metrics CSV from evaluate_paired_test.py.",
+    )
+    parser.add_argument(
+        "--output-dir", default=str(OUTPUT_DIR), help="Folder for the output CSVs."
+    )
+    parser.add_argument(
+        "--n-bootstrap", type=int, default=N_BOOTSTRAP,
+        help="Number of bootstrap replicates.",
+    )
+    parser.add_argument(
+        "--random-seed", type=int, default=RANDOM_SEED,
+        help="Seed of the bootstrap random generator.",
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+    input_path = project_path(args.metrics_csv)
+    output_dir = project_path(args.output_dir)
+    n_bootstrap = args.n_bootstrap
+    random_seed = args.random_seed
     # --------------------------------------------------
     # Load data
     # --------------------------------------------------
 
-    df = pd.read_csv(INPUT)
+    df = pd.read_csv(input_path)
 
     required = {
         "seed",
@@ -145,7 +173,7 @@ def main():
     # Cluster bootstrap: resample unique patients
     # --------------------------------------------------
 
-    rng = np.random.default_rng(RANDOM_SEED)
+    rng = np.random.default_rng(random_seed)
 
     n_patients = len(patient_summary)
 
@@ -168,7 +196,7 @@ def main():
         sampled_indices = rng.integers(
             0,
             len(values),
-            size=(N_BOOTSTRAP, len(values))
+            size=(n_bootstrap, len(values))
         )
 
         bootstrap_means = values[sampled_indices].mean(axis=1)
@@ -192,21 +220,21 @@ def main():
     # Save outputs
     # --------------------------------------------------
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     patient_seed.to_csv(
-        OUTPUT_DIR / "patient_seed_metrics.csv",
+        output_dir / "patient_seed_metrics.csv",
         index=False
     )
 
     patient_summary.to_csv(
-        OUTPUT_DIR / "patient_aggregated_metrics.csv",
+        output_dir / "patient_aggregated_metrics.csv",
         index=False
     )
 
     bootstrap_df = pd.DataFrame(bootstrap_results).T
     bootstrap_df.to_csv(
-        OUTPUT_DIR / "cluster_bootstrap_summary.csv"
+        output_dir / "cluster_bootstrap_summary.csv"
     )
 
 
@@ -228,7 +256,7 @@ def main():
     print(bootstrap_df.round(5).to_string())
 
     print("\nSaved files:")
-    for path in sorted(OUTPUT_DIR.glob("*.csv")):
+    for path in sorted(output_dir.glob("*.csv")):
         print(path)
 
 

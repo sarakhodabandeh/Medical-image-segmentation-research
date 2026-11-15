@@ -1,12 +1,26 @@
+import argparse
 import pandas as pd
 from pathlib import Path
 
 
-from src.utils.paths import PROJECT_ROOT
+from src.utils.paths import PROJECT_ROOT, project_path
 
 INPUT = PROJECT_ROOT / "results" / "test_evaluation" / "test_per_image_metrics.csv"
 OUTPUT = PROJECT_ROOT / "results" / "sensitivity_analysis"
 
+parser = argparse.ArgumentParser(
+    description="Aggregation sensitivity of paired split-strategy differences."
+)
+parser.add_argument(
+    "--metrics-csv", default=str(INPUT),
+    help="Per-image metrics CSV from evaluate_paired_test.py.",
+)
+parser.add_argument(
+    "--output-dir", default=str(OUTPUT), help="Folder for the output CSV."
+)
+args = parser.parse_args()
+INPUT = project_path(args.metrics_csv)
+OUTPUT = project_path(args.output_dir)
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
 
