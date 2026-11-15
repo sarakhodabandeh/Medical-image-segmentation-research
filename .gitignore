@@ -59,3 +59,6 @@ results/false_positive_components/
 results/false_positive_visualization/
 results/probability_analysis/
 results/test_visualizations/
+
+results/checkpoint_threshold_comparison.csv
+results/padding_comparison.csv
