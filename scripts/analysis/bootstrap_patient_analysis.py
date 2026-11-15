@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -9,24 +9,7 @@ import pandas as pd
 # --------------------------------------------------
 
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 INPUT = (
     PROJECT_ROOT

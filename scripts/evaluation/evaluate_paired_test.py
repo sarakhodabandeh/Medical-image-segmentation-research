@@ -12,24 +12,8 @@ from src.datasets.preprocessing import resize_with_padding, resize_with_constant
 from src.models.unet import UNet
 
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
+from src.utils.paths import PROJECT_ROOT
 
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
-
-
-PROJECT_ROOT = find_project_root()
 DEFAULT_SEEDS = [42, 123, 2025, 7, 99]
 
 

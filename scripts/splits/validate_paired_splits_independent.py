@@ -10,22 +10,8 @@ TARGET_VAL = {"Benign": 26, "Malignant": 12, "Normal": 62}
 TARGET_TEST = {"Benign": 31, "Malignant": 14, "Normal": 61}
 
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
+from src.utils.paths import PROJECT_ROOT
 
-
-PROJECT_ROOT = find_project_root()
 SPLIT_DIR = PROJECT_ROOT / "data" / "processed" / "paired_splits"
 REPORT_PATH = SPLIT_DIR / "independent_paired_split_audit.csv"
 MANIFEST_PATH = SPLIT_DIR / "paired_split_manifest.csv"

@@ -6,28 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
-
-
-ROOT = find_project_root()
-
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
+from src.utils.paths import PROJECT_ROOT as ROOT
 
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import resize_with_padding

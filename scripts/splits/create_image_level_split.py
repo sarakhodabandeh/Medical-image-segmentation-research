@@ -5,21 +5,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError("Could not locate project root.")
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 INPUT = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
 OUTPUT = PROJECT_ROOT / "data" / "processed" / "bus_uclm_image_split.csv"

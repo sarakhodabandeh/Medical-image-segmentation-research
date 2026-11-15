@@ -8,25 +8,7 @@ import numpy as np
 from PIL import Image
 
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError("Could not locate project root.")
-
-
-PROJECT_ROOT = find_project_root()
-
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
+from src.utils.paths import PROJECT_ROOT
 
 from src.datasets.bus_uclm import BUSUCLMDataset
 

@@ -8,21 +8,7 @@ from collections import Counter
 import numpy as np
 from PIL import Image
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError("Could not locate project root.")
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 ZIP_PATH = (
     PROJECT_ROOT

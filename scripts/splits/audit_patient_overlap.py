@@ -1,25 +1,11 @@
-﻿from itertools import combinations
+from itertools import combinations
 from pathlib import Path
 
 import pandas as pd
 
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
+from src.utils.paths import PROJECT_ROOT
 
-
-PROJECT_ROOT = find_project_root()
 INPUT = PROJECT_ROOT / "results" / "test_evaluation" / "test_per_image_metrics.csv"
 OUTPUT = PROJECT_ROOT / "results" / "patient_overlap_audit"
 
