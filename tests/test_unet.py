@@ -4,32 +4,11 @@ from pathlib import Path
 import torch
 
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
-
-
-PROJECT_ROOT = find_project_root()
-
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
+from src.utils.paths import PROJECT_ROOT
 
 from src.models.unet import UNet
 
-def main():
+def test_unet():
     device = torch.device(
         "cuda" if torch.cuda.is_available() else "cpu"
     )
@@ -57,7 +36,3 @@ def main():
 
     assert output.shape == (1, 1, 256, 256)
     print("U-Net test PASSED!")
-
-
-if __name__ == "__main__":
-    main()
