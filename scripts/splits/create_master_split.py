@@ -4,11 +4,11 @@ import csv
 from pathlib import Path
 from collections import defaultdict, Counter
 
-from bus_uclm import BUSUCLMDataset
+from src.datasets.bus_uclm import BUSUCLMDataset
 
 
 # Project paths
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from src.utils.paths import PROJECT_ROOT
 OUTPUT_PATH = (
     PROJECT_ROOT
     / "data"

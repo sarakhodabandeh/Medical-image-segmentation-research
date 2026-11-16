@@ -10,7 +10,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from src.utils.paths import PROJECT_ROOT
 
 DEFAULT_ZIP_PATH = (
     PROJECT_ROOT
