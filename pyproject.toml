@@ -14,3 +14,16 @@ requires-python = ">=3.12"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# E/W: pycodestyle, F: pyflakes, I: import sorting
+select = ["E", "F", "I", "W"]
+# Long lines are wrapped by `ruff format` where possible; long strings and comments are left alone.
+ignore = ["E501"]

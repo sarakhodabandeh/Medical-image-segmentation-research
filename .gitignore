@@ -62,3 +62,5 @@ results/test_visualizations/
 
 results/checkpoint_threshold_comparison.csv
 results/padding_comparison.csv
+
+.ruff_cache/
