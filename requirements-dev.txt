@@ -1,0 +1,3 @@
+# Extra tools for running the tests and checking the code
+-r requirements.txt
+pytest==9.2.0
