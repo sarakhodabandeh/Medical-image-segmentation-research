@@ -27,3 +27,6 @@ target-version = "py312"
 select = ["E", "F", "I", "W"]
 # Long lines are wrapped by `ruff format` where possible; long strings and comments are left alone.
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/exploratory/**" = ["F841", "E731", "F811"]
