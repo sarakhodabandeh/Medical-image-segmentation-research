@@ -1,30 +1,17 @@
-import sys
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
-
-CHECKPOINT = (
-    PROJECT_ROOT
-    / "results"
-    / "unet_weighted_bce_2_10ep"
-    / "best_model.pt"
-)
+CHECKPOINT = PROJECT_ROOT / "results" / "unet_weighted_bce_2_10ep" / "best_model.pt"
 
 
 def main():
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     checkpoint = torch.load(
         CHECKPOINT,
@@ -94,11 +81,7 @@ def main():
 
             intersection = (prediction & target).sum().item()
             denominator = prediction.sum().item() + target.sum().item()
-            dice = (
-                2 * intersection / denominator
-                if denominator > 0
-                else 1.0
-            )
+            dice = 2 * intersection / denominator if denominator > 0 else 1.0
 
             fig, axes = plt.subplots(1, 4, figsize=(16, 4))
 
@@ -118,8 +101,7 @@ def main():
                 ax.axis("off")
 
             fig.suptitle(
-                f"Dice: {dice:.3f} | "
-                f"Predicted area: {prediction.float().mean().item():.3f}"
+                f"Dice: {dice:.3f} | Predicted area: {prediction.float().mean().item():.3f}"
             )
             plt.tight_layout()
             plt.show()

@@ -1,5 +1,4 @@
 import argparse
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -8,16 +7,13 @@ import torch
 import yaml
 from PIL import Image, ImageDraw
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
 from src.models.unet import UNet
-
+from src.utils.paths import PROJECT_ROOT
 
 DEFAULT_SEEDS = [42, 123, 2025, 7, 99]
 
@@ -27,7 +23,11 @@ SAMPLES = [
     {"filename": "CHVI_005.png", "seed": 123, "reason": "Malignant lesion; Dice=0 in both methods"},
     {"filename": "DAPA_025.png", "seed": 42, "reason": "Benign lesion; Dice=0 in both methods"},
     {"filename": "PLBA_024.png", "seed": 123, "reason": "Benign lesion; high Dice in both methods"},
-    {"filename": "FLKA_002.png", "seed": 7, "reason": "Malignant lesion; high Dice in both methods"},
+    {
+        "filename": "FLKA_002.png",
+        "seed": 7,
+        "reason": "Malignant lesion; high Dice in both methods",
+    },
     {"filename": "STSP_022.png", "seed": 123, "reason": "Normal image; high false-positive area"},
 ]
 
@@ -120,7 +120,9 @@ def main():
     parser.add_argument("--splits-dir", default="data/processed/paired_splits")
     parser.add_argument("--results-dir", default="results")
     parser.add_argument("--output-dir", default="results/test_visualizations")
-    parser.add_argument("--metrics-csv", default="results/test_evaluation/test_per_image_metrics.csv")
+    parser.add_argument(
+        "--metrics-csv", default="results/test_evaluation/test_per_image_metrics.csv"
+    )
     args = parser.parse_args()
 
     with resolve_path(args.config).open("r", encoding="utf-8") as f:
@@ -133,9 +135,6 @@ def main():
     output_dir = resolve_path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    metrics_path = resolve_path(args.metrics_csv)
-    metrics = pd.read_csv(metrics_path) if metrics_path.exists() else None
 
     print("Device:", device)
     if device.type == "cuda":
@@ -169,9 +168,7 @@ def main():
         panel_results = {}
 
         for split_type in ("image", "patient"):
-            checkpoint_path = (
-                results_dir / f"paired_full_{split_type}_{seed}" / "best_model.pt"
-            )
+            checkpoint_path = results_dir / f"paired_full_{split_type}_{seed}" / "best_model.pt"
             if not checkpoint_path.exists():
                 raise FileNotFoundError(f"Missing checkpoint: {checkpoint_path}")
 
@@ -187,8 +184,10 @@ def main():
                 use_amp,
             )
             score = dice_score(prediction, target) if label != "Normal" else float("nan")
-            fp_area = float(prediction.mean()) if label == "Normal" else float(
-                np.logical_and(prediction, ~target).mean()
+            fp_area = (
+                float(prediction.mean())
+                if label == "Normal"
+                else float(np.logical_and(prediction, ~target).mean())
             )
             panel_results[split_type] = {
                 "dice": score,
@@ -214,11 +213,7 @@ def main():
 
             pred_overlay = make_overlay(display_image, target, prediction)
             dice_text = f"Dice = {score:.3f}" if np.isfinite(score) else "Dice = N/A (Normal)"
-            subtitle = (
-                f"{dice_text} | FP area = {fp_area:.3f}"
-                if label == "Normal"
-                else dice_text
-            )
+            subtitle = f"{dice_text} | FP area = {fp_area:.3f}" if label == "Normal" else dice_text
             panels.append(
                 add_caption(
                     pred_overlay,
@@ -243,26 +238,30 @@ def main():
         output_path = output_dir / f"{safe_name}_seed_{seed}_comparison.png"
         montage.save(output_path)
 
-        summary_rows.append({
-            "filename": filename,
-            "patient_id": patient_id,
-            "label": label,
-            "seed": seed,
-            "reason_for_selection": sample_info["reason"],
-            "image_level_dice": panel_results["image"]["dice"],
-            "patient_level_dice": panel_results["patient"]["dice"],
-            "image_level_false_positive_area_fraction": (
-                panel_results["image"]["false_positive_area_fraction"]
-                if label == "Normal" else np.nan
-            ),
-            "patient_level_false_positive_area_fraction": (
-                panel_results["patient"]["false_positive_area_fraction"]
-                if label == "Normal" else np.nan
-            ),
-            "image_level_selected_epoch": panel_results["image"]["epoch"],
-            "patient_level_selected_epoch": panel_results["patient"]["epoch"],
-            "visualization_file": str(output_path.relative_to(PROJECT_ROOT)),
-        })
+        summary_rows.append(
+            {
+                "filename": filename,
+                "patient_id": patient_id,
+                "label": label,
+                "seed": seed,
+                "reason_for_selection": sample_info["reason"],
+                "image_level_dice": panel_results["image"]["dice"],
+                "patient_level_dice": panel_results["patient"]["dice"],
+                "image_level_false_positive_area_fraction": (
+                    panel_results["image"]["false_positive_area_fraction"]
+                    if label == "Normal"
+                    else np.nan
+                ),
+                "patient_level_false_positive_area_fraction": (
+                    panel_results["patient"]["false_positive_area_fraction"]
+                    if label == "Normal"
+                    else np.nan
+                ),
+                "image_level_selected_epoch": panel_results["image"]["epoch"],
+                "patient_level_selected_epoch": panel_results["patient"]["epoch"],
+                "visualization_file": str(output_path.relative_to(PROJECT_ROOT)),
+            }
+        )
         print(f"Saved: {output_path}")
 
     summary_path = output_dir / "visualization_summary.csv"

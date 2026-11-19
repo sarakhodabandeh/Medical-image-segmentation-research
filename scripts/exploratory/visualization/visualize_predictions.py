@@ -1,29 +1,19 @@
-import sys
-from pathlib import Path
-
 import matplotlib
+
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-
 import torch
 import torch.nn.functional as F
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
-
-CHECKPOINT_PATH = (
-    PROJECT_ROOT / "results" / "unet_baseline" / "best_model.pt"
-)
+CHECKPOINT_PATH = PROJECT_ROOT / "results" / "unet_baseline" / "best_model.pt"
 
 
 def main():
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     checkpoint = torch.load(
         CHECKPOINT_PATH,
@@ -46,20 +36,15 @@ def main():
 
     # Prefer examples containing lesions, then include normal scans.
     lesion_indices = [
-        i for i, sample in enumerate(dataset.samples)
-        if sample["label"] in ("Benign", "Malignant")
+        i for i, sample in enumerate(dataset.samples) if sample["label"] in ("Benign", "Malignant")
     ]
-    normal_indices = [
-        i for i, sample in enumerate(dataset.samples)
-        if sample["label"] == "Normal"
-    ]
+    normal_indices = [i for i, sample in enumerate(dataset.samples) if sample["label"] == "Normal"]
 
-    selected_indices = (
-        lesion_indices[:3] + normal_indices[:1]
-    )
+    selected_indices = lesion_indices[:3] + normal_indices[:1]
 
     fig, axes = plt.subplots(
-        len(selected_indices), 4,
+        len(selected_indices),
+        4,
         figsize=(14, 4 * len(selected_indices)),
         squeeze=False,
         constrained_layout=True,
@@ -73,8 +58,7 @@ def main():
 
         image_resized = F.interpolate(
             image,
-            size=(config["data"]["image_size"],
-                  config["data"]["image_size"]),
+            size=(config["data"]["image_size"], config["data"]["image_size"]),
             mode="bilinear",
             align_corners=False,
         )
@@ -88,23 +72,23 @@ def main():
 
         target_resized = F.interpolate(
             sample["mask"].unsqueeze(0),
-            size=(config["data"]["image_size"],
-                  config["data"]["image_size"]),
+            size=(config["data"]["image_size"], config["data"]["image_size"]),
             mode="nearest",
         )[0, 0].numpy()
 
-        image_display = F.interpolate(
-            sample["image"].unsqueeze(0),
-            size=(config["data"]["image_size"],
-                  config["data"]["image_size"]),
-            mode="bilinear",
-            align_corners=False,
-        )[0].permute(1, 2, 0).numpy()
+        image_display = (
+            F.interpolate(
+                sample["image"].unsqueeze(0),
+                size=(config["data"]["image_size"], config["data"]["image_size"]),
+                mode="bilinear",
+                align_corners=False,
+            )[0]
+            .permute(1, 2, 0)
+            .numpy()
+        )
 
         axes[row, 0].imshow(image_display)
-        axes[row, 0].set_title(
-            f"Image: {sample['filename']} ({sample['label']})"
-        )
+        axes[row, 0].set_title(f"Image: {sample['filename']} ({sample['label']})")
 
         axes[row, 1].imshow(target_resized, cmap="gray", vmin=0, vmax=1)
         axes[row, 1].set_title("Ground-truth mask")
@@ -113,9 +97,7 @@ def main():
         axes[row, 2].set_title("Predicted mask")
 
         axes[row, 3].imshow(image_display)
-        axes[row, 3].imshow(
-            prediction, cmap="Reds", alpha=0.4, vmin=0, vmax=1
-        )
+        axes[row, 3].imshow(prediction, cmap="Reds", alpha=0.4, vmin=0, vmax=1)
         axes[row, 3].set_title("Prediction overlay")
 
         for col in range(4):
@@ -123,8 +105,10 @@ def main():
 
         print(
             sample["filename"],
-            "| label:", sample["label"],
-            "| mean probability:", f"{probability.mean().item():.4f}",
+            "| label:",
+            sample["label"],
+            "| mean probability:",
+            f"{probability.mean().item():.4f}",
             "| predicted positive fraction:",
             f"{prediction.mean():.4f}",
         )

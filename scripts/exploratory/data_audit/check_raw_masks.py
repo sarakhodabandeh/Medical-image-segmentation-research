@@ -1,26 +1,16 @@
-
 import csv
 import zipfile
 from io import BytesIO
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
-
 from src.utils.paths import PROJECT_ROOT as ROOT
 
-ZIP_PATH = (
-    ROOT
-    / "data"
-    / "raw"
-    / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
-)
+ZIP_PATH = ROOT / "data" / "raw" / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
 
-ZIP_ROOT = (
-    "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
-)
+ZIP_ROOT = "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
 
 SAMPLES = ["ANFO_007.png", "FUHI_003.png", "CHSP_010.png"]
 
@@ -34,10 +24,7 @@ def main():
                 (line.decode("utf-8-sig") for line in file),
                 delimiter=";",
             )
-            metadata = {
-                row["Image"]: row
-                for row in reader
-            }
+            metadata = {row["Image"]: row for row in reader}
 
         for filename in SAMPLES:
             if filename not in metadata:
@@ -47,23 +34,17 @@ def main():
             image_path = f"{ZIP_ROOT}/images/{filename}"
             mask_path = f"{ZIP_ROOT}/masks/{filename}"
 
-            with Image.open(
-                BytesIO(archive.read(image_path))
-            ) as im:
+            with Image.open(BytesIO(archive.read(image_path))) as im:
                 image = np.array(im.convert("RGB"))
 
-            with Image.open(
-                BytesIO(archive.read(mask_path))
-            ) as im:
+            with Image.open(BytesIO(archive.read(mask_path))) as im:
                 mask = np.array(im.convert("RGB"))
 
             print(f"\n{filename}")
             print("Label:", metadata[filename]["Label"])
             print("Image dimensions (W,H):", Image.fromarray(image).size)
             print("Mask dimensions (W,H):", Image.fromarray(mask).size)
-            print("Mask colors:", np.unique(
-                mask.reshape(-1, 3), axis=0
-            )[:10])
+            print("Mask colors:", np.unique(mask.reshape(-1, 3), axis=0)[:10])
 
             if image.shape[:2] != mask.shape[:2]:
                 print("DIMENSION MISMATCH — not overlaying this sample.")

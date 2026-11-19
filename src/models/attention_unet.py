@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 
@@ -19,7 +18,6 @@ class DoubleConv(nn.Module):
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
-
             nn.Conv2d(
                 out_channels,
                 out_channels,
@@ -76,9 +74,7 @@ class AttentionGate(nn.Module):
         gate_features = self.gate_projection(gate)
         skip_features = self.skip_projection(skip)
 
-        attention_map = self.attention(
-            gate_features + skip_features
-        )
+        attention_map = self.attention(gate_features + skip_features)
 
         return skip * attention_map
 

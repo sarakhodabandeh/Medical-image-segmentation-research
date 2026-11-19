@@ -1,43 +1,32 @@
-import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
-
+from src.utils.paths import PROJECT_ROOT
 
 ROOT = PROJECT_ROOT
 
-CHECKPOINT = (
-    ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_007.pt"
-)
+CHECKPOINT = ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_007.pt"
 
 THRESHOLD = 0.60
 NUM_WORST_IMAGES = 10
 
-CSV_PATH = (
-    ROOT / "results" / "test_evaluation" / "test_per_image.csv"
-)
+CSV_PATH = ROOT / "results" / "test_evaluation" / "test_per_image.csv"
 
-OUTPUT_DIR = (
-    ROOT / "results" / "test_evaluation" / "worst_case_visualizations"
-)
+OUTPUT_DIR = ROOT / "results" / "test_evaluation" / "worst_case_visualizations"
 
 
 def main():
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if not CSV_PATH.exists():
         raise FileNotFoundError(f"CSV not found: {CSV_PATH}")
@@ -48,24 +37,14 @@ def main():
     # Load the ten worst lesion cases from the existing test results.
     results = pd.read_csv(CSV_PATH)
 
-    lesion_results = results[
-        results["label"].isin(["Benign", "Malignant"])
-    ].copy()
+    lesion_results = results[results["label"].isin(["Benign", "Malignant"])].copy()
 
-    worst_cases = (
-        lesion_results
-        .sort_values("dice", ascending=True)
-        .head(NUM_WORST_IMAGES)
-    )
+    worst_cases = lesion_results.sort_values("dice", ascending=True).head(NUM_WORST_IMAGES)
 
     filenames = set(worst_cases["filename"].astype(str))
 
     print("Selected test cases:")
-    print(
-        worst_cases[
-            ["filename", "patient_id", "label", "dice"]
-        ].to_string(index=False)
-    )
+    print(worst_cases[["filename", "patient_id", "label", "dice"]].to_string(index=False))
 
     # Load the fixed checkpoint.
     checkpoint = torch.load(
@@ -111,18 +90,15 @@ def main():
             images = batch["image"].to(device)
             masks = batch["mask"].to(device)
 
-            images, masks = resize_with_padding(
-                images, masks, size
-            )
+            images, masks = resize_with_padding(images, masks, size)
 
             probability = torch.sigmoid(model(images))[0, 0].cpu()
             target = masks[0, 0].cpu() >= 0.5
             prediction = probability >= THRESHOLD
             max_value = probability.max().item()
-            max_position = torch.nonzero(
-                probability == probability.max(),
-                as_tuple=False
-            )[0].tolist()
+            max_position = torch.nonzero(probability == probability.max(), as_tuple=False)[
+                0
+            ].tolist()
 
             print(
                 f"{filename} | "
@@ -137,19 +113,13 @@ def main():
             target_pixels = target.sum().item()
 
             denominator = pred_pixels + target_pixels
-            dice = (
-                2 * intersection / denominator
-                if denominator > 0
-                else 1.0
-            )
+            dice = 2 * intersection / denominator if denominator > 0 else 1.0
 
             image = images[0].cpu().permute(1, 2, 0).numpy()
 
             # Green = true positive, red = false positive,
             # blue = false negative.
-            overlay = torch.zeros(
-                (*target.shape, 3), dtype=torch.float32
-            )
+            overlay = torch.zeros((*target.shape, 3), dtype=torch.float32)
             overlay[..., 1] = (prediction & target).float()
             overlay[..., 0] = (prediction & ~target).float()
             overlay[..., 2] = (~prediction & target).float()
@@ -165,9 +135,7 @@ def main():
             axes[2].imshow(prediction, cmap="gray")
             axes[2].set_title(f"Prediction @ {THRESHOLD}")
 
-            axes[3].imshow(
-                probability, cmap="hot", vmin=0, vmax=1
-            )
+            axes[3].imshow(probability, cmap="hot", vmin=0, vmax=1)
             axes[3].set_title("Probability")
 
             axes[4].imshow(overlay.numpy())

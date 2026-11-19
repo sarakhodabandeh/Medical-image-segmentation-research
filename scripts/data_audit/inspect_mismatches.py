@@ -1,9 +1,8 @@
-
 import zipfile
-from pathlib import Path
 from io import BytesIO
 
 import matplotlib
+
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,26 +11,15 @@ from PIL import Image
 from src.utils.paths import PROJECT_ROOT
 
 ZIP_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
+    PROJECT_ROOT / "data" / "raw" / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
 )
 
-ROOT = (
-    "BUS-UCLM Breast ultrasound lesion segmentation dataset/"
-    "BUS-UCLM"
-)
+ROOT = "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
 
-samples = [
-    f"HESN_{i:03d}.png"
-    for i in range(13)
-]
+samples = [f"HESN_{i:03d}.png" for i in range(13)]
 
 with zipfile.ZipFile(ZIP_PATH, "r") as archive:
-    fig, axes = plt.subplots(
-        len(samples), 3, figsize=(15, 12)
-    )
+    fig, axes = plt.subplots(len(samples), 3, figsize=(15, 12))
 
     for i, filename in enumerate(samples):
         image_path = f"{ROOT}/images/{filename}"
@@ -51,27 +39,17 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
         print("Image dimensions (width, height):", image.size)
         print("Mask dimensions (width, height):", original_mask.size)
 
-        colors, counts = np.unique(
-            mask_rgb.reshape(-1, 3),
-            axis=0,
-            return_counts=True
-        )
+        colors, counts = np.unique(mask_rgb.reshape(-1, 3), axis=0, return_counts=True)
 
         print("Number of unique RGB colors:", len(colors))
         print("Most common mask colors (RGB, pixel count):")
 
         order = np.argsort(counts)[::-1]
         for idx in order[:10]:
-            print(
-                tuple(int(v) for v in colors[idx]),
-                int(counts[idx])
-            )
+            print(tuple(int(v) for v in colors[idx]), int(counts[idx]))
 
         # Diagnostic only; do not use this resized mask for training.
-        resized_mask = original_mask.resize(
-            image.size,
-            resample=Image.Resampling.NEAREST
-        )
+        resized_mask = original_mask.resize(image.size, resample=Image.Resampling.NEAREST)
         resized_rgb = np.array(resized_mask)
 
         # Treat any non-black pixel as foreground for visualization.
@@ -79,25 +57,18 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
 
         overlay = image_array.copy()
         red = np.array([255, 0, 0], dtype=np.float32)
-        overlay[foreground] = (
-            0.55 * overlay[foreground].astype(np.float32)
-            + 0.45 * red
-        ).astype(np.uint8)
+        overlay[foreground] = (0.55 * overlay[foreground].astype(np.float32) + 0.45 * red).astype(
+            np.uint8
+        )
 
         axes[i, 0].imshow(image)
-        axes[i, 0].set_title(
-            f"{filename}\nImage: {image.size}"
-        )
+        axes[i, 0].set_title(f"{filename}\nImage: {image.size}")
 
         axes[i, 1].imshow(original_mask)
-        axes[i, 1].set_title(
-            f"Original RGB mask: {original_mask.size}"
-        )
+        axes[i, 1].set_title(f"Original RGB mask: {original_mask.size}")
 
         axes[i, 2].imshow(overlay)
-        axes[i, 2].set_title(
-            "Temporary resize overlay\nAlignment not yet verified"
-        )
+        axes[i, 2].set_title("Temporary resize overlay\nAlignment not yet verified")
 
         for ax in axes[i]:
             ax.axis("off")

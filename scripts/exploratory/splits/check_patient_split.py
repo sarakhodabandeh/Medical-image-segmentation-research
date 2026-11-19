@@ -1,15 +1,8 @@
-from pathlib import Path
 import pandas as pd
-
 
 from src.utils.paths import PROJECT_ROOT
 
-CSV_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
-    / "bus_uclm_patient_split.csv"
-)
+CSV_PATH = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
 
 
 def main():
@@ -42,18 +35,14 @@ def main():
     print("=" * 60)
 
     for split, group in df.groupby("split"):
-        print(
-            f"{split}: {group['patient_id'].nunique()} patients, "
-            f"{len(group)} images"
-        )
+        print(f"{split}: {group['patient_id'].nunique()} patients, {len(group)} images")
 
     print("\n" + "=" * 60)
     print("4. PATIENT OVERLAP")
     print("=" * 60)
 
     patient_sets = {
-        split: set(group["patient_id"].dropna())
-        for split, group in df.groupby("split")
+        split: set(group["patient_id"].dropna()) for split, group in df.groupby("split")
     }
 
     split_names = ["train", "val", "test"]

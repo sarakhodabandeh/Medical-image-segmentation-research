@@ -1,26 +1,18 @@
-import sys
-from pathlib import Path
-
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT as ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT as ROOT
 
-
-CHECKPOINT = (
-    ROOT / "results" / "unet_weighted_bce_2_10ep" / "best_model.pt"
-)
+CHECKPOINT = ROOT / "results" / "unet_weighted_bce_2_10ep" / "best_model.pt"
 
 THRESHOLDS = [0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90]
+
+
 def main():
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     checkpoint = torch.load(
         CHECKPOINT,
@@ -40,9 +32,7 @@ def main():
     model.eval()
 
     dataset = BUSUCLMDataset(split="val")
-    loader = DataLoader(
-        dataset, batch_size=4, shuffle=False, num_workers=0
-    )
+    loader = DataLoader(dataset, batch_size=4, shuffle=False, num_workers=0)
 
     # Cache probabilities and targets so each threshold uses
     # exactly the same model predictions.
@@ -70,11 +60,13 @@ def main():
             targets = masks.cpu() >= 0.5
 
             for i, label in enumerate(batch["label"]):
-                records.append({
-                    "label": label,
-                    "probabilities": probabilities[i, 0],
-                    "target": targets[i, 0],
-                })
+                records.append(
+                    {
+                        "label": label,
+                        "probabilities": probabilities[i, 0],
+                        "target": targets[i, 0],
+                    }
+                )
 
     print("Checkpoint epoch:", checkpoint["epoch"])
     print("\nThreshold results")
@@ -97,10 +89,7 @@ def main():
                 intersection = (pred & target).sum().item()
                 denominator = pred.sum().item() + target.sum().item()
 
-                dice = (
-                    2 * intersection / denominator
-                    if denominator > 0 else 1.0
-                )
+                dice = 2 * intersection / denominator if denominator > 0 else 1.0
                 dice_values.append(dice)
 
             elif record["label"] == "Normal":
@@ -111,23 +100,15 @@ def main():
                 if pred.any().item():
                     normal_fp_images += 1
 
-        mean_dice = (
-            sum(dice_values) / len(dice_values)
-            if dice_values else 0.0
-        )
-        fp_rate = (
-            normal_fp_images / normal_count
-            if normal_count else 0.0
-        )
+        mean_dice = sum(dice_values) / len(dice_values) if dice_values else 0.0
+        fp_rate = normal_fp_images / normal_count if normal_count else 0.0
         mean_fp_fraction = (
             sum(normal_positive_fractions) / len(normal_positive_fractions)
-            if normal_positive_fractions else 0.0
+            if normal_positive_fractions
+            else 0.0
         )
 
-        print(
-            f"{threshold:9.2f} | {mean_dice:11.4f} | "
-            f"{fp_rate:14.4f} | {mean_fp_fraction:16.4f}"
-        )
+        print(f"{threshold:9.2f} | {mean_dice:11.4f} | {fp_rate:14.4f} | {mean_fp_fraction:16.4f}")
 
 
 if __name__ == "__main__":

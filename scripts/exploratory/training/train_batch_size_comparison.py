@@ -1,7 +1,6 @@
 import argparse
 import csv
 import random
-import sys
 import time
 from pathlib import Path
 
@@ -11,20 +10,20 @@ import yaml
 from torch import nn
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
-from src.models.unet import UNet
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
+from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
 
 def resolve_path(value):
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
+
+
 def resolve_path(value):
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
@@ -57,8 +56,7 @@ def dice_loss(logits, targets, smooth=1.0):
     return 1.0 - dice.mean()
 
 
-def evaluate(model, loader, device, image_size, use_amp,
-             bce_loss_fn, padding_mode, config):
+def evaluate(model, loader, device, image_size, use_amp, bce_loss_fn, padding_mode, config):
     model.eval()
     total_loss = 0.0
     total_images = 0
@@ -74,19 +72,16 @@ def evaluate(model, loader, device, image_size, use_amp,
             images = batch["image"].to(device, non_blocking=True)
             masks = batch["mask"].to(device, non_blocking=True)
             labels = batch["label"]
-            images, masks = preprocess_batch(
-                images, masks, image_size, padding_mode
-            )
+            images, masks = preprocess_batch(images, masks, image_size, padding_mode)
 
             with torch.amp.autocast(
                 device_type=device.type,
                 enabled=use_amp and device.type == "cuda",
             ):
                 logits = model(images)
-                loss = (
-                    config["loss"]["bce_weight"] * bce_loss_fn(logits, masks)
-                    + config["loss"]["dice_weight"] * dice_loss(logits, masks)
-                )
+                loss = config["loss"]["bce_weight"] * bce_loss_fn(logits, masks) + config["loss"][
+                    "dice_weight"
+                ] * dice_loss(logits, masks)
 
             batch_n = images.size(0)
             total_loss += loss.item() * batch_n
@@ -131,17 +126,19 @@ def collect_bn_stats(model, batch_size, epoch):
     rows = []
     for name, module in model.named_modules():
         if isinstance(module, nn.BatchNorm2d):
-            rows.append({
-                "batch_size": batch_size,
-                "epoch": epoch,
-                "layer": name,
-                "num_features": module.num_features,
-                "running_mean_abs_mean": module.running_mean.detach().abs().mean().item(),
-                "running_var_mean": module.running_var.detach().mean().item(),
-                "running_var_min": module.running_var.detach().min().item(),
-                "running_var_max": module.running_var.detach().max().item(),
-                "num_batches_tracked": int(module.num_batches_tracked.item()),
-            })
+            rows.append(
+                {
+                    "batch_size": batch_size,
+                    "epoch": epoch,
+                    "layer": name,
+                    "num_features": module.num_features,
+                    "running_mean_abs_mean": module.running_mean.detach().abs().mean().item(),
+                    "running_var_mean": module.running_var.detach().mean().item(),
+                    "running_var_min": module.running_var.detach().min().item(),
+                    "running_var_max": module.running_var.detach().max().item(),
+                    "num_batches_tracked": int(module.num_batches_tracked.item()),
+                }
+            )
     return rows
 
 
@@ -186,9 +183,7 @@ def run_experiment(batch_size, args, config, train_dataset, val_dataset, device)
         weight_decay=config["training"]["weight_decay"],
     )
     pos_weight = config["loss"].get("pos_weight", 1.0)
-    bce_loss_fn = nn.BCEWithLogitsLoss(
-        pos_weight=torch.tensor([pos_weight], device=device)
-    )
+    bce_loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight], device=device))
 
     out_dir = resolve_path(args.output_dir) / f"batch_{batch_size}"
     ckpt_dir = out_dir / "epoch_checkpoints"
@@ -220,9 +215,7 @@ def run_experiment(batch_size, args, config, train_dataset, val_dataset, device)
         for batch in train_loader:
             images = batch["image"].to(device, non_blocking=True)
             masks = batch["mask"].to(device, non_blocking=True)
-            images, masks = preprocess_batch(
-                images, masks, image_size, padding_mode
-            )
+            images, masks = preprocess_batch(images, masks, image_size, padding_mode)
             optimizer.zero_grad(set_to_none=True)
 
             with torch.amp.autocast(
@@ -232,10 +225,7 @@ def run_experiment(batch_size, args, config, train_dataset, val_dataset, device)
                 logits = model(images)
                 bce = bce_loss_fn(logits, masks)
                 dloss = dice_loss(logits, masks)
-                loss = (
-                    config["loss"]["bce_weight"] * bce
-                    + config["loss"]["dice_weight"] * dloss
-                )
+                loss = config["loss"]["bce_weight"] * bce + config["loss"]["dice_weight"] * dloss
 
             loss.backward()
             optimizer.step()
@@ -247,8 +237,7 @@ def run_experiment(batch_size, args, config, train_dataset, val_dataset, device)
 
         train_loss = running_loss / max(seen_images, 1)
         metrics = evaluate(
-            model, val_loader, device, image_size, use_amp,
-            bce_loss_fn, padding_mode, config
+            model, val_loader, device, image_size, use_amp, bce_loss_fn, padding_mode, config
         )
         seconds = time.time() - start
 
@@ -265,34 +254,40 @@ def run_experiment(batch_size, args, config, train_dataset, val_dataset, device)
         log_rows.append(row)
         bn_rows.extend(collect_bn_stats(model, batch_size, epoch))
 
-        torch.save({
-            "model_state_dict": model.state_dict(),
-            "epoch": epoch,
-            "batch_size": batch_size,
-            "train_loss": train_loss,
-            **metrics,
-            "config": config,
-            "seed": seed,
-            "split_csv": str(resolve_path(args.split_csv)),
-            "padding_mode": padding_mode,
-            "optimizer_steps_cumulative": optimizer_steps_total,
-            "training_images_seen_cumulative": len(train_dataset) * epoch,
-            "checkpoint_type": "batch_size_comparison",
-        }, ckpt_dir / f"epoch_{epoch:03d}.pt")
-
-        if metrics["val_lesion_dice_at_0_5"] > best_dice:
-            best_dice = metrics["val_lesion_dice_at_0_5"]
-            torch.save({
+        torch.save(
+            {
                 "model_state_dict": model.state_dict(),
                 "epoch": epoch,
                 "batch_size": batch_size,
+                "train_loss": train_loss,
                 **metrics,
                 "config": config,
                 "seed": seed,
                 "split_csv": str(resolve_path(args.split_csv)),
                 "padding_mode": padding_mode,
-                "selection_rule": "maximum validation lesion macro-Dice at threshold 0.5",
-            }, best_path)
+                "optimizer_steps_cumulative": optimizer_steps_total,
+                "training_images_seen_cumulative": len(train_dataset) * epoch,
+                "checkpoint_type": "batch_size_comparison",
+            },
+            ckpt_dir / f"epoch_{epoch:03d}.pt",
+        )
+
+        if metrics["val_lesion_dice_at_0_5"] > best_dice:
+            best_dice = metrics["val_lesion_dice_at_0_5"]
+            torch.save(
+                {
+                    "model_state_dict": model.state_dict(),
+                    "epoch": epoch,
+                    "batch_size": batch_size,
+                    **metrics,
+                    "config": config,
+                    "seed": seed,
+                    "split_csv": str(resolve_path(args.split_csv)),
+                    "padding_mode": padding_mode,
+                    "selection_rule": "maximum validation lesion macro-Dice at threshold 0.5",
+                },
+                best_path,
+            )
 
         print(
             f"Epoch {epoch:02d}/{args.epochs} | "
@@ -358,9 +353,7 @@ def main():
     print("No test set is loaded or evaluated.")
 
     for batch_size in args.batch_sizes:
-        run_experiment(
-            batch_size, args, config, train_dataset, val_dataset, device
-        )
+        run_experiment(batch_size, args, config, train_dataset, val_dataset, device)
 
     print("\nAll batch-size experiments finished.")
     print("Upload each batch_*/training_log.csv and batchnorm_stats_by_epoch.csv")

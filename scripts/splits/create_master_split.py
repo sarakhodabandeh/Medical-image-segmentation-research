@@ -1,36 +1,58 @@
-
-
 import csv
-from pathlib import Path
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 
 from src.datasets.bus_uclm import BUSUCLMDataset
 
-
 # Project paths
 from src.utils.paths import PROJECT_ROOT
-OUTPUT_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
-    / "bus_uclm_patient_split.csv"
-)
+
+OUTPUT_PATH = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
 
 # Keep the patient-level split we selected.
 TRAIN_PATIENTS = [
-    "ANFO", "ASSC", "CHCO", "CHSP", "CHVI",
-    "COST", "COVA", "CRCI", "DAPA", "ELCO",
-    "FLBA", "FUHI", "HUBL", "KIFO", "MENE",
-    "NIRO", "OSCU", "PAGY", "POFR", "SECH",
-    "SHST", "SIBA", "STSP", "TOCI", "VITR",
+    "ANFO",
+    "ASSC",
+    "CHCO",
+    "CHSP",
+    "CHVI",
+    "COST",
+    "COVA",
+    "CRCI",
+    "DAPA",
+    "ELCO",
+    "FLBA",
+    "FUHI",
+    "HUBL",
+    "KIFO",
+    "MENE",
+    "NIRO",
+    "OSCU",
+    "PAGY",
+    "POFR",
+    "SECH",
+    "SHST",
+    "SIBA",
+    "STSP",
+    "TOCI",
+    "VITR",
 ]
 
 VAL_PATIENTS = [
-    "COPE", "ORPE", "PLBA", "RARE", "UNCU", "WAQU",
+    "COPE",
+    "ORPE",
+    "PLBA",
+    "RARE",
+    "UNCU",
+    "WAQU",
 ]
 
 TEST_PATIENTS = [
-    "ALWI", "ANAT", "CAWI", "CODE", "FLKA", "LOTI",
+    "ALWI",
+    "ANAT",
+    "CAWI",
+    "CODE",
+    "FLKA",
+    "LOTI",
 ]
 
 
@@ -64,18 +86,16 @@ def main():
     for sample in dataset.samples:
         patient_id = sample["patient_id"]
 
-        split = next(
-            name
-            for name, patients in patient_splits.items()
-            if patient_id in patients
-        )
+        split = next(name for name, patients in patient_splits.items() if patient_id in patients)
 
-        rows.append({
-            "filename": sample["filename"],
-            "patient_id": patient_id,
-            "label": sample["label"],
-            "split": split,
-        })
+        rows.append(
+            {
+                "filename": sample["filename"],
+                "patient_id": patient_id,
+                "label": sample["label"],
+                "split": split,
+            }
+        )
 
         split_counts[split][sample["label"]] += 1
         split_patients[split].add(patient_id)

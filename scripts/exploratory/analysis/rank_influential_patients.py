@@ -1,7 +1,4 @@
-from pathlib import Path
-
 import pandas as pd
-
 
 from src.utils.paths import PROJECT_ROOT
 
@@ -21,14 +18,12 @@ def main():
 
     if not INPUT.is_file():
         raise FileNotFoundError(
-            f"LOPO results file not found: {INPUT}. "
-            "Run leave_one_patient_out.py first."
+            f"LOPO results file not found: {INPUT}. Run leave_one_patient_out.py first."
         )
 
     if not SUMMARY_INPUT.is_file():
         raise FileNotFoundError(
-            f"LOPO summary file not found: {SUMMARY_INPUT}. "
-            "Run leave_one_patient_out.py first."
+            f"LOPO summary file not found: {SUMMARY_INPUT}. Run leave_one_patient_out.py first."
         )
 
     df = pd.read_csv(INPUT)
@@ -37,9 +32,7 @@ def main():
     required_result_columns = {"metric", "excluded_patient", *METHODS}
     missing_result = required_result_columns - set(df.columns)
     if missing_result:
-        raise ValueError(
-            f"Missing columns in LOPO results: {sorted(missing_result)}"
-        )
+        raise ValueError(f"Missing columns in LOPO results: {sorted(missing_result)}")
 
     required_summary_columns = {
         "metric",
@@ -47,19 +40,14 @@ def main():
     }
     missing_summary = required_summary_columns - set(summary_df.columns)
     if missing_summary:
-        raise ValueError(
-            f"Missing columns in LOPO summary: {sorted(missing_summary)}"
-        )
+        raise ValueError(f"Missing columns in LOPO summary: {sorted(missing_summary)}")
 
     # Read baseline values from the LOPO summary instead of maintaining
     # manually copied constants that could become stale.
     baseline = {}
     for _, row in summary_df.iterrows():
         metric = row["metric"]
-        baseline[metric] = {
-            method: row[f"{method}_baseline"]
-            for method in METHODS
-        }
+        baseline[metric] = {method: row[f"{method}_baseline"] for method in METHODS}
 
     ranked = []
 
@@ -73,23 +61,23 @@ def main():
         for method in METHODS:
             base = baseline[metric][method]
             subset["absolute_change"] = (subset[method] - base).abs()
-            subset["direction_changed"] = (
-                (subset[method] > 0) != (base > 0)
-            )
+            subset["direction_changed"] = (subset[method] > 0) != (base > 0)
 
             top = subset.nlargest(5, "absolute_change")
 
             for rank, (_, row) in enumerate(top.iterrows(), start=1):
-                ranked.append({
-                    "metric": metric,
-                    "method": method,
-                    "rank": rank,
-                    "excluded_patient": row["excluded_patient"],
-                    "baseline": base,
-                    "value_after_exclusion": row[method],
-                    "absolute_change": row["absolute_change"],
-                    "direction_changed": row["direction_changed"],
-                })
+                ranked.append(
+                    {
+                        "metric": metric,
+                        "method": method,
+                        "rank": rank,
+                        "excluded_patient": row["excluded_patient"],
+                        "baseline": base,
+                        "value_after_exclusion": row[method],
+                        "absolute_change": row["absolute_change"],
+                        "direction_changed": row["direction_changed"],
+                    }
+                )
 
     result = pd.DataFrame(ranked)
     output_file = OUTPUT / "influential_patients.csv"
@@ -101,10 +89,7 @@ def main():
 
         for method in METHODS:
             print(f"\n{method}")
-            part = result[
-                (result["metric"] == metric)
-                & (result["method"] == method)
-            ]
+            part = result[(result["metric"] == metric) & (result["method"] == method)]
             print(
                 part[
                     [

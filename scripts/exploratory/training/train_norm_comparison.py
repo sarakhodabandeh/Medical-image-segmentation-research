@@ -1,30 +1,28 @@
 import argparse
 import csv
 import random
-import sys
 import time
 from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import yaml
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
+from src.utils.paths import PROJECT_ROOT
 
 
 def resolve_path(value):
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
+
+
 def resolve_path(value):
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
@@ -48,9 +46,7 @@ class DoubleConv(nn.Module):
             norm2 = nn.BatchNorm2d(out_channels)
         elif norm_type == "group":
             if out_channels % groups != 0:
-                raise ValueError(
-                    f"out_channels={out_channels} is not divisible by groups={groups}"
-                )
+                raise ValueError(f"out_channels={out_channels} is not divisible by groups={groups}")
             norm1 = nn.GroupNorm(groups, out_channels)
             norm2 = nn.GroupNorm(groups, out_channels)
         else:
@@ -70,8 +66,9 @@ class DoubleConv(nn.Module):
 
 
 class UNetNorm(nn.Module):
-    def __init__(self, in_channels=3, out_channels=1, base_channels=16,
-                 norm_type="batch", groups=8):
+    def __init__(
+        self, in_channels=3, out_channels=1, base_channels=16, norm_type="batch", groups=8
+    ):
         super().__init__()
         c = base_channels
         block = lambda in_c, out_c: DoubleConv(in_c, out_c, norm_type, groups)
@@ -122,8 +119,7 @@ def dice_loss(logits, targets, smooth=1.0):
     return 1.0 - dice.mean()
 
 
-def evaluate(model, loader, device, image_size, use_amp,
-             bce_loss_fn, padding_mode, config):
+def evaluate(model, loader, device, image_size, use_amp, bce_loss_fn, padding_mode, config):
     model.eval()
     total_loss = 0.0
     total_images = 0
@@ -139,18 +135,15 @@ def evaluate(model, loader, device, image_size, use_amp,
             images = batch["image"].to(device, non_blocking=True)
             masks = batch["mask"].to(device, non_blocking=True)
             labels = batch["label"]
-            images, masks = preprocess_batch(
-                images, masks, image_size, padding_mode
-            )
+            images, masks = preprocess_batch(images, masks, image_size, padding_mode)
             with torch.amp.autocast(
                 device_type=device.type,
                 enabled=use_amp and device.type == "cuda",
             ):
                 logits = model(images)
-                loss = (
-                    config["loss"]["bce_weight"] * bce_loss_fn(logits, masks)
-                    + config["loss"]["dice_weight"] * dice_loss(logits, masks)
-                )
+                loss = config["loss"]["bce_weight"] * bce_loss_fn(logits, masks) + config["loss"][
+                    "dice_weight"
+                ] * dice_loss(logits, masks)
 
             n = images.size(0)
             total_loss += loss.item() * n
@@ -195,27 +188,31 @@ def norm_stats(model, norm_type, epoch):
     rows = []
     for name, module in model.named_modules():
         if isinstance(module, nn.BatchNorm2d):
-            rows.append({
-                "norm_type": norm_type,
-                "epoch": epoch,
-                "layer": name,
-                "running_mean_abs_mean": module.running_mean.detach().abs().mean().item(),
-                "running_var_mean": module.running_var.detach().mean().item(),
-                "running_var_min": module.running_var.detach().min().item(),
-                "running_var_max": module.running_var.detach().max().item(),
-                "num_batches_tracked": int(module.num_batches_tracked.item()),
-            })
+            rows.append(
+                {
+                    "norm_type": norm_type,
+                    "epoch": epoch,
+                    "layer": name,
+                    "running_mean_abs_mean": module.running_mean.detach().abs().mean().item(),
+                    "running_var_mean": module.running_var.detach().mean().item(),
+                    "running_var_min": module.running_var.detach().min().item(),
+                    "running_var_max": module.running_var.detach().max().item(),
+                    "num_batches_tracked": int(module.num_batches_tracked.item()),
+                }
+            )
         elif isinstance(module, nn.GroupNorm):
-            rows.append({
-                "norm_type": norm_type,
-                "epoch": epoch,
-                "layer": name,
-                "running_mean_abs_mean": "",
-                "running_var_mean": "",
-                "running_var_min": "",
-                "running_var_max": "",
-                "num_batches_tracked": "",
-            })
+            rows.append(
+                {
+                    "norm_type": norm_type,
+                    "epoch": epoch,
+                    "layer": name,
+                    "running_mean_abs_mean": "",
+                    "running_var_mean": "",
+                    "running_var_min": "",
+                    "running_var_max": "",
+                    "num_batches_tracked": "",
+                }
+            )
     return rows
 
 
@@ -228,12 +225,21 @@ def run_one(norm_type, args, config, train_ds, val_ds, device):
     generator = torch.Generator()
     generator.manual_seed(args.seed)
     train_loader = DataLoader(
-        train_ds, batch_size=batch_size, shuffle=True, num_workers=0,
-        pin_memory=(device.type == "cuda"), generator=generator, drop_last=False,
+        train_ds,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=0,
+        pin_memory=(device.type == "cuda"),
+        generator=generator,
+        drop_last=False,
     )
     val_loader = DataLoader(
-        val_ds, batch_size=args.eval_batch_size, shuffle=False, num_workers=0,
-        pin_memory=(device.type == "cuda"), drop_last=False,
+        val_ds,
+        batch_size=args.eval_batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=(device.type == "cuda"),
+        drop_last=False,
     )
 
     model = UNetNorm(
@@ -250,9 +256,7 @@ def run_one(norm_type, args, config, train_ds, val_ds, device):
         weight_decay=config["training"]["weight_decay"],
     )
     pos_weight = config["loss"].get("pos_weight", 1.0)
-    bce_fn = nn.BCEWithLogitsLoss(
-        pos_weight=torch.tensor([pos_weight], device=device)
-    )
+    bce_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight], device=device))
 
     out_dir = resolve_path(args.output_dir) / norm_type
     ckpt_dir = out_dir / "epoch_checkpoints"
@@ -282,19 +286,16 @@ def run_one(norm_type, args, config, train_ds, val_ds, device):
         for batch in train_loader:
             images = batch["image"].to(device, non_blocking=True)
             masks = batch["mask"].to(device, non_blocking=True)
-            images, masks = preprocess_batch(
-                images, masks, image_size, args.padding
-            )
+            images, masks = preprocess_batch(images, masks, image_size, args.padding)
             optimizer.zero_grad(set_to_none=True)
             with torch.amp.autocast(
                 device_type=device.type,
                 enabled=use_amp and device.type == "cuda",
             ):
                 logits = model(images)
-                loss = (
-                    config["loss"]["bce_weight"] * bce_fn(logits, masks)
-                    + config["loss"]["dice_weight"] * dice_loss(logits, masks)
-                )
+                loss = config["loss"]["bce_weight"] * bce_fn(logits, masks) + config["loss"][
+                    "dice_weight"
+                ] * dice_loss(logits, masks)
             loss.backward()
             optimizer.step()
             n = images.size(0)
@@ -305,8 +306,14 @@ def run_one(norm_type, args, config, train_ds, val_ds, device):
 
         train_loss = running_loss / max(seen, 1)
         metrics = evaluate(
-            model, val_loader, device, image_size, use_amp,
-            bce_fn, args.padding, config,
+            model,
+            val_loader,
+            device,
+            image_size,
+            use_amp,
+            bce_fn,
+            args.padding,
+            config,
         )
         seconds = time.time() - start
         row = {

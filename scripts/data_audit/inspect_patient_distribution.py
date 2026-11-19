@@ -1,5 +1,4 @@
 import pandas as pd
-from pathlib import Path
 
 from src.utils.paths import PROJECT_ROOT
 
@@ -23,9 +22,4 @@ print("\nSummary statistics:")
 print(patient_summary["n_images"].describe())
 
 print("\nNumber of patients by image count:")
-print(
-    patient_summary["n_images"]
-    .value_counts()
-    .sort_index()
-    .to_string()
-)
+print(patient_summary["n_images"].value_counts().sort_index().to_string())

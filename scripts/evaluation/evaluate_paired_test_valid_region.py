@@ -9,13 +9,10 @@ from torch.utils.data import DataLoader
 
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
 from src.models.unet import UNet
-
-
-
 from src.utils.paths import PROJECT_ROOT
 
 DEFAULT_SEEDS = [42, 123, 2025, 7, 99]
@@ -24,7 +21,6 @@ DEFAULT_SEEDS = [42, 123, 2025, 7, 99]
 def resolve_path(value):
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
-
 
 
 def preprocess(images, masks, size, padding_mode):
@@ -51,7 +47,7 @@ def make_valid_region_mask(batch_size, original_h, original_w, size, device):
     left = pad_w // 2
 
     valid = torch.zeros((batch_size, 1, size, size), dtype=torch.bool, device=device)
-    valid[:, :, top:top + new_h, left:left + new_w] = True
+    valid[:, :, top : top + new_h, left : left + new_w] = True
     return valid
 
 
@@ -70,9 +66,7 @@ def evaluate_model(model, loader, device, image_size, padding_mode, use_amp, run
 
             # DataLoader batches must have a common H,W to stack tensors.
             original_h, original_w = original_images.shape[-2:]
-            images, masks = preprocess(
-                original_images, original_masks, image_size, padding_mode
-            )
+            images, masks = preprocess(original_images, original_masks, image_size, padding_mode)
 
             valid_region = make_valid_region_mask(
                 images.shape[0], original_h, original_w, image_size, device
@@ -114,33 +108,33 @@ def evaluate_model(model, loader, device, image_size, padding_mode, use_amp, run
                 recall = safe_ratio(tp, tp + fn) if is_lesion else np.nan
                 precision = safe_ratio(tp, tp + fp) if is_lesion else np.nan
 
-                rows.append({
-                    "run": run_name,
-                    "filename": batch["filename"][i],
-                    "patient_id": batch["patient_id"][i],
-                    "label": label,
-                    "valid_image_pixels": valid_pixels,
-                    "padding_pixels": padding_pixels,
-                    "tp_valid_pixels": tp,
-                    "fp_valid_pixels": fp,
-                    "fn_valid_pixels": fn,
-                    "tn_valid_pixels": tn,
-                    "dice_valid_region": dice,
-                    "iou_valid_region": iou,
-                    "pixel_recall_valid_region": recall,
-                    "pixel_precision_valid_region": precision,
-                    "normal_false_positive_image_valid_region": (
-                        int(fp > 0) if label == "Normal" else np.nan
-                    ),
-                    "false_positive_area_fraction_valid_region": (
-                        safe_ratio(fp, valid_pixels)
-                    ),
-                    "padding_predicted_pixels": padding_fp,
-                    "padding_prediction_fraction": padding_prediction_fraction,
-                    "padding_share_of_all_predictions": safe_ratio(
-                        padding_fp, int(pred.sum().item())
-                    ),
-                })
+                rows.append(
+                    {
+                        "run": run_name,
+                        "filename": batch["filename"][i],
+                        "patient_id": batch["patient_id"][i],
+                        "label": label,
+                        "valid_image_pixels": valid_pixels,
+                        "padding_pixels": padding_pixels,
+                        "tp_valid_pixels": tp,
+                        "fp_valid_pixels": fp,
+                        "fn_valid_pixels": fn,
+                        "tn_valid_pixels": tn,
+                        "dice_valid_region": dice,
+                        "iou_valid_region": iou,
+                        "pixel_recall_valid_region": recall,
+                        "pixel_precision_valid_region": precision,
+                        "normal_false_positive_image_valid_region": (
+                            int(fp > 0) if label == "Normal" else np.nan
+                        ),
+                        "false_positive_area_fraction_valid_region": (safe_ratio(fp, valid_pixels)),
+                        "padding_predicted_pixels": padding_fp,
+                        "padding_prediction_fraction": padding_prediction_fraction,
+                        "padding_share_of_all_predictions": safe_ratio(
+                            padding_fp, int(pred.sum().item())
+                        ),
+                    }
+                )
 
     return pd.DataFrame(rows)
 
@@ -157,12 +151,8 @@ def summarize(frame, seed, split_type):
         "n_normal_images": len(normals),
         "lesion_macro_dice_valid_region": lesions.dice_valid_region.mean(),
         "lesion_macro_iou_valid_region": lesions.iou_valid_region.mean(),
-        "lesion_macro_pixel_recall_valid_region": (
-            lesions.pixel_recall_valid_region.mean()
-        ),
-        "lesion_macro_pixel_precision_valid_region": (
-            lesions.pixel_precision_valid_region.mean()
-        ),
+        "lesion_macro_pixel_recall_valid_region": (lesions.pixel_recall_valid_region.mean()),
+        "lesion_macro_pixel_precision_valid_region": (lesions.pixel_precision_valid_region.mean()),
         "normal_false_positive_image_rate_valid_region": (
             normals.normal_false_positive_image_valid_region.mean()
         ),
@@ -174,9 +164,7 @@ def summarize(frame, seed, split_type):
             normals.fp_valid_pixels.sum() + normals.tn_valid_pixels.sum(),
         ),
         "mean_padding_prediction_fraction": frame.padding_prediction_fraction.mean(),
-        "mean_padding_share_of_all_predictions": (
-            frame.padding_share_of_all_predictions.mean()
-        ),
+        "mean_padding_share_of_all_predictions": (frame.padding_share_of_all_predictions.mean()),
     }
 
     for label in ("Benign", "Malignant"):
@@ -185,9 +173,7 @@ def summarize(frame, seed, split_type):
         result[f"{key}_n"] = len(subset)
         result[f"{key}_dice_valid_region"] = subset.dice_valid_region.mean()
         result[f"{key}_iou_valid_region"] = subset.iou_valid_region.mean()
-        result[f"{key}_pixel_recall_valid_region"] = (
-            subset.pixel_recall_valid_region.mean()
-        )
+        result[f"{key}_pixel_recall_valid_region"] = subset.pixel_recall_valid_region.mean()
 
     return result
 
@@ -202,9 +188,7 @@ def main():
     parser.add_argument("--config", default="configs/paper_unet.yaml")
     parser.add_argument("--splits-dir", default="data/processed/paired_splits")
     parser.add_argument("--results-dir", default="results")
-    parser.add_argument(
-        "--output-dir", default="results/test_evaluation_valid_region"
-    )
+    parser.add_argument("--output-dir", default="results/test_evaluation_valid_region")
     parser.add_argument("--seeds", nargs="+", type=int, default=DEFAULT_SEEDS)
     parser.add_argument("--batch-size", type=int, default=None)
     args = parser.parse_args()
@@ -235,24 +219,18 @@ def main():
     for seed in args.seeds:
         for split_type in ("image", "patient"):
             split_csv = splits_dir / f"{split_type}_level_seed_{seed}.csv"
-            checkpoint_path = (
-                results_dir / f"paired_full_{split_type}_{seed}" / "best_model.pt"
-            )
+            checkpoint_path = results_dir / f"paired_full_{split_type}_{seed}" / "best_model.pt"
 
             if not split_csv.exists():
                 raise FileNotFoundError(f"Missing split CSV: {split_csv}")
             if not checkpoint_path.exists():
                 raise FileNotFoundError(f"Missing checkpoint: {checkpoint_path}")
 
-            checkpoint = torch.load(
-                checkpoint_path, map_location=device, weights_only=False
-            )
+            checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
             cfg = checkpoint.get("config", base_config)
             checkpoint_seed = int(checkpoint.get("seed", seed))
             if checkpoint_seed != seed:
-                raise ValueError(
-                    f"Seed mismatch in {checkpoint_path}: {checkpoint_seed}"
-                )
+                raise ValueError(f"Seed mismatch in {checkpoint_path}: {checkpoint_seed}")
 
             padding_mode = checkpoint.get("padding_mode", "replicate")
             dataset = BUSUCLMDataset(split="test", split_path=split_csv)

@@ -1,37 +1,22 @@
-import sys
 import csv
 from pathlib import Path
 
+import matplotlib
 import torch
 import torch.nn.functional as F
-import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
 from torch.utils.data import DataLoader
-
-
-from src.utils.paths import PROJECT_ROOT
 
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
+CHECKPOINT_PATH = PROJECT_ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_007.pt"
 
-CHECKPOINT_PATH = (
-    PROJECT_ROOT
-    / "results"
-    / "unet_replicate_pw5_fp30"
-    / "epoch_007.pt"
-)
-
-OUTPUT_DIR = (
-    PROJECT_ROOT
-    / "results"
-    / "test_evaluation"
-    / "preprocessing_comparison"
-)
+OUTPUT_DIR = PROJECT_ROOT / "results" / "test_evaluation" / "preprocessing_comparison"
 
 TARGET_FILENAMES = {
     "CAWI_005.png",
@@ -54,9 +39,7 @@ def calculate_dice(prediction, target):
 
 
 def main():
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     checkpoint = torch.load(
         CHECKPOINT_PATH,
@@ -97,9 +80,7 @@ def main():
             mask = batch["mask"].to(device)
 
             # Method 1: aspect-ratio-preserving resize + padding.
-            padded_image, padded_mask = resize_with_padding(
-                image, mask, IMAGE_SIZE
-            )
+            padded_image, padded_mask = resize_with_padding(image, mask, IMAGE_SIZE)
 
             # Method 2: direct resize, for diagnosis only.
             direct_image = F.interpolate(
@@ -119,9 +100,7 @@ def main():
                 ("direct_resize", direct_image, direct_mask),
             ]
 
-            fig, axes = plt.subplots(
-                2, 4, figsize=(14, 7)
-            )
+            fig, axes = plt.subplots(2, 4, figsize=(14, 7))
 
             for row_index, (method, img, target_mask) in enumerate(methods):
                 probability = torch.sigmoid(model(img))[0, 0].cpu()
@@ -138,35 +117,27 @@ def main():
                     f"dice={dice:.4f}"
                 )
 
-                records.append({
-                    "filename": filename,
-                    "method": method,
-                    "max_probability": probability.max().item(),
-                    "predicted_pixels": prediction.sum().item(),
-                    "target_pixels": target.sum().item(),
-                    "dice": dice,
-                })
-
-                image_np = (
-                    img[0].cpu().permute(1, 2, 0).numpy().clip(0, 1)
+                records.append(
+                    {
+                        "filename": filename,
+                        "method": method,
+                        "max_probability": probability.max().item(),
+                        "predicted_pixels": prediction.sum().item(),
+                        "target_pixels": target.sum().item(),
+                        "dice": dice,
+                    }
                 )
+
+                image_np = img[0].cpu().permute(1, 2, 0).numpy().clip(0, 1)
 
                 axes[row_index, 0].imshow(image_np)
-                axes[row_index, 0].set_title(
-                    f"{method}: image"
-                )
+                axes[row_index, 0].set_title(f"{method}: image")
 
-                axes[row_index, 1].imshow(
-                    target.numpy(), cmap="gray"
-                )
+                axes[row_index, 1].imshow(target.numpy(), cmap="gray")
                 axes[row_index, 1].set_title("Ground truth")
 
-                axes[row_index, 2].imshow(
-                    prediction.numpy(), cmap="gray"
-                )
-                axes[row_index, 2].set_title(
-                    f"Prediction, Dice={dice:.3f}"
-                )
+                axes[row_index, 2].imshow(prediction.numpy(), cmap="gray")
+                axes[row_index, 2].set_title(f"Prediction, Dice={dice:.3f}")
 
                 axes[row_index, 3].imshow(
                     probability.numpy(),
@@ -174,16 +145,13 @@ def main():
                     vmin=0,
                     vmax=1,
                 )
-                axes[row_index, 3].set_title(
-                    f"Max probability={probability.max().item():.3f}"
-                )
+                axes[row_index, 3].set_title(f"Max probability={probability.max().item():.3f}")
 
             for ax in axes.flat:
                 ax.axis("off")
 
             fig.suptitle(
-                f"{filename} | checkpoint epoch {checkpoint['epoch']} "
-                f"| threshold {THRESHOLD}"
+                f"{filename} | checkpoint epoch {checkpoint['epoch']} | threshold {THRESHOLD}"
             )
             plt.tight_layout()
 
@@ -196,9 +164,7 @@ def main():
 
     csv_path = OUTPUT_DIR / "comparison_metrics.csv"
 
-    with csv_path.open(
-        "w", newline="", encoding="utf-8"
-    ) as file:
+    with csv_path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(
             file,
             fieldnames=[

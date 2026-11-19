@@ -1,10 +1,9 @@
-
-import zipfile
 import csv
-from pathlib import Path
+import zipfile
 from io import BytesIO
 
 import matplotlib
+
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,16 +12,10 @@ from PIL import Image
 from src.utils.paths import PROJECT_ROOT
 
 ZIP_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
+    PROJECT_ROOT / "data" / "raw" / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
 )
 
-ROOT = (
-    "BUS-UCLM Breast ultrasound lesion segmentation dataset/"
-    "BUS-UCLM"
-)
+ROOT = "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
 
 
 # Keep the same imports, ZIP_PATH, ROOT, and labels-loading code above.
@@ -36,15 +29,10 @@ selected = [
 
 with zipfile.ZipFile(ZIP_PATH, "r") as archive:
     with archive.open(f"{ROOT}/INFO.csv", "r") as file:
-        reader = csv.DictReader(
-            (line.decode("utf-8-sig") for line in file),
-            delimiter=";"
-        )
+        reader = csv.DictReader((line.decode("utf-8-sig") for line in file), delimiter=";")
         labels = {row["Image"]: row["Label"] for row in reader}
 
-    fig, axes = plt.subplots(
-        len(selected), 3, figsize=(15, 12), constrained_layout=True
-    )
+    fig, axes = plt.subplots(len(selected), 3, figsize=(15, 12), constrained_layout=True)
 
     for i, filename in enumerate(selected):
         image_path = f"{ROOT}/images/{filename}"
@@ -80,13 +68,9 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
         axes[i, 1].set_title("Original mask", fontsize=10)
 
         axes[i, 2].imshow(overlay)
-        axes[i, 2].set_title(
-            f"Overlay — {labels.get(filename, 'Unknown')}",
-            fontsize=10
-        )
+        axes[i, 2].set_title(f"Overlay — {labels.get(filename, 'Unknown')}", fontsize=10)
 
         for ax in axes[i]:
             ax.axis("off")
 
     plt.show()
-

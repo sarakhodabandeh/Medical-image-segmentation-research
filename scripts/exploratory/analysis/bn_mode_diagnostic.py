@@ -1,27 +1,25 @@
 import argparse
 import copy
 import csv
-import sys
 from pathlib import Path
 
 import torch
-from torch.utils.data import DataLoader
 import yaml
-
-
-from src.utils.paths import PROJECT_ROOT
+from torch.utils.data import DataLoader
 
 from src.datasets.bus_uclm import BUSUCLMDataset
-from src.models.unet import UNet
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
+from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
 
 def resolve_path(value):
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
+
 
 def preprocess_batch(images, masks, size, padding_mode):
     if padding_mode == "replicate":
@@ -121,9 +119,7 @@ def main():
             for batch in loader:
                 images = batch["image"].to(device, non_blocking=True)
                 masks = batch["mask"].to(device, non_blocking=True)
-                images, masks = preprocess_batch(
-                    images, masks, image_size, padding_mode
-                )
+                images, masks = preprocess_batch(images, masks, image_size, padding_mode)
 
                 # Deliberately disable AMP so the comparison isolates mode.
                 eval_logits = eval_model(images)
@@ -135,26 +131,28 @@ def main():
                 for i, label in enumerate(batch["label"]):
                     pe = eval_prob[i, 0]
                     pt = train_prob[i, 0]
-                    per_image_rows.append({
-                        "epoch": epoch,
-                        "filename": batch["filename"][i],
-                        "patient_id": batch["patient_id"][i],
-                        "label": label,
-                        "eval_prob_mean": pe.mean().item(),
-                        "train_prob_mean": pt.mean().item(),
-                        "eval_prob_q95": torch.quantile(pe.flatten(), 0.95).item(),
-                        "train_prob_q95": torch.quantile(pt.flatten(), 0.95).item(),
-                        "eval_prob_max": pe.max().item(),
-                        "train_prob_max": pt.max().item(),
-                        "eval_area_fraction_at_0_5": (pe >= 0.5).float().mean().item(),
-                        "train_area_fraction_at_0_5": (pt >= 0.5).float().mean().item(),
-                        "eval_any_positive_at_0_5": int((pe >= 0.5).any().item()),
-                        "train_any_positive_at_0_5": int((pt >= 0.5).any().item()),
-                        "probability_map_mae": (pe - pt).abs().mean().item(),
-                        "threshold_disagreement_fraction": (
-                            ((pe >= 0.5) != (pt >= 0.5)).float().mean().item()
-                        ),
-                    })
+                    per_image_rows.append(
+                        {
+                            "epoch": epoch,
+                            "filename": batch["filename"][i],
+                            "patient_id": batch["patient_id"][i],
+                            "label": label,
+                            "eval_prob_mean": pe.mean().item(),
+                            "train_prob_mean": pt.mean().item(),
+                            "eval_prob_q95": torch.quantile(pe.flatten(), 0.95).item(),
+                            "train_prob_q95": torch.quantile(pt.flatten(), 0.95).item(),
+                            "eval_prob_max": pe.max().item(),
+                            "train_prob_max": pt.max().item(),
+                            "eval_area_fraction_at_0_5": (pe >= 0.5).float().mean().item(),
+                            "train_area_fraction_at_0_5": (pt >= 0.5).float().mean().item(),
+                            "eval_any_positive_at_0_5": int((pe >= 0.5).any().item()),
+                            "train_any_positive_at_0_5": int((pt >= 0.5).any().item()),
+                            "probability_map_mae": (pe - pt).abs().mean().item(),
+                            "threshold_disagreement_fraction": (
+                                ((pe >= 0.5) != (pt >= 0.5)).float().mean().item()
+                            ),
+                        }
+                    )
 
         # Record per-layer BN running-stat changes caused by train-mode passes.
         for name, module in train_model.named_modules():
@@ -162,23 +160,27 @@ def main():
                 before = bn_before[name]
                 after_mean = module.running_mean.detach()
                 after_var = module.running_var.detach()
-                bn_rows.append({
-                    "epoch": epoch,
-                    "layer": name,
-                    "num_features": module.num_features,
-                    "num_batches_tracked_before": before["batches"],
-                    "num_batches_tracked_after": int(module.num_batches_tracked.item()),
-                    "running_mean_abs_before": before["mean"].abs().mean().item(),
-                    "running_mean_abs_after": after_mean.abs().mean().item(),
-                    "running_mean_change_mean_abs": (
-                        after_mean - before["mean"]
-                    ).abs().mean().item(),
-                    "running_var_mean_before": before["var"].mean().item(),
-                    "running_var_mean_after": after_var.mean().item(),
-                    "running_var_change_mean_abs": (
-                        after_var - before["var"]
-                    ).abs().mean().item(),
-                })
+                bn_rows.append(
+                    {
+                        "epoch": epoch,
+                        "layer": name,
+                        "num_features": module.num_features,
+                        "num_batches_tracked_before": before["batches"],
+                        "num_batches_tracked_after": int(module.num_batches_tracked.item()),
+                        "running_mean_abs_before": before["mean"].abs().mean().item(),
+                        "running_mean_abs_after": after_mean.abs().mean().item(),
+                        "running_mean_change_mean_abs": (after_mean - before["mean"])
+                        .abs()
+                        .mean()
+                        .item(),
+                        "running_var_mean_before": before["var"].mean().item(),
+                        "running_var_mean_after": after_var.mean().item(),
+                        "running_var_change_mean_abs": (after_var - before["var"])
+                        .abs()
+                        .mean()
+                        .item(),
+                    }
+                )
 
         print(f"Completed epoch {epoch:03d}")
 

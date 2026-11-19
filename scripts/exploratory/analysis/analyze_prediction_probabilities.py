@@ -1,21 +1,13 @@
-import sys
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT as ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT as ROOT
 
-
-CHECKPOINT = (
-    ROOT / "results" / "unet_aspect_ratio_pw5" / "best_model.pt"
-)
+CHECKPOINT = ROOT / "results" / "unet_aspect_ratio_pw5" / "best_model.pt"
 
 OUTPUT_DIR = ROOT / "results" / "probability_analysis"
 
@@ -25,14 +17,10 @@ MAX_EXAMPLES_PER_CLASS = 4
 
 
 def main():
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if not CHECKPOINT.exists():
-        raise FileNotFoundError(
-            f"Checkpoint not found: {CHECKPOINT}"
-        )
+        raise FileNotFoundError(f"Checkpoint not found: {CHECKPOINT}")
 
     checkpoint = torch.load(
         CHECKPOINT,
@@ -104,13 +92,13 @@ def main():
                     # All pixels in a Normal image.
                     normal_probs.append(prob.flatten())
 
-                    normal_image_stats.append({
-                        "max_probability": prob.max().item(),
-                        "mean_probability": prob.mean().item(),
-                        "positive_fraction": (
-                            prediction.float().mean().item()
-                        ),
-                    })
+                    normal_image_stats.append(
+                        {
+                            "max_probability": prob.max().item(),
+                            "mean_probability": prob.mean().item(),
+                            "positive_fraction": (prediction.float().mean().item()),
+                        }
+                    )
 
                 elif label in ("Benign", "Malignant"):
                     # Pixels belonging to the ground-truth lesion.
@@ -120,67 +108,49 @@ def main():
                     # Background pixels in images containing a lesion.
                     background = ~target
                     if background.any():
-                        lesion_background_probs.append(
-                            prob[background]
-                        )
+                        lesion_background_probs.append(prob[background])
 
-                    intersection = (
-                        prediction & target
-                    ).sum().item()
+                    intersection = (prediction & target).sum().item()
 
-                    denominator = (
-                        prediction.sum().item()
-                        + target.sum().item()
+                    denominator = prediction.sum().item() + target.sum().item()
+
+                    dice = 2 * intersection / denominator if denominator > 0 else 1.0
+
+                    lesion_image_stats.append(
+                        {
+                            "label": label,
+                            "max_probability": prob.max().item(),
+                            "mean_probability": prob.mean().item(),
+                            "positive_fraction": (prediction.float().mean().item()),
+                            "dice": dice,
+                        }
                     )
 
-                    dice = (
-                        2 * intersection / denominator
-                        if denominator > 0
-                        else 1.0
+                if label in examples and len(examples[label]) < MAX_EXAMPLES_PER_CLASS:
+                    examples[label].append(
+                        {
+                            "image": image,
+                            "target": target,
+                            "probability": prob,
+                            "label": label,
+                        }
                     )
-
-                    lesion_image_stats.append({
-                        "label": label,
-                        "max_probability": prob.max().item(),
-                        "mean_probability": prob.mean().item(),
-                        "positive_fraction": (
-                            prediction.float().mean().item()
-                        ),
-                        "dice": dice,
-                    })
-
-                if (
-                    label in examples
-                    and len(examples[label]) < MAX_EXAMPLES_PER_CLASS
-                ):
-                    examples[label].append({
-                        "image": image,
-                        "target": target,
-                        "probability": prob,
-                        "label": label,
-                    })
 
     if not normal_probs:
         raise RuntimeError("No Normal images were found in validation.")
 
     if not lesion_probs:
-        raise RuntimeError(
-            "No foreground lesion pixels were found in validation."
-        )
+        raise RuntimeError("No foreground lesion pixels were found in validation.")
 
     if not lesion_background_probs:
-        raise RuntimeError(
-            "No lesion-background pixels were found in validation."
-        )
+        raise RuntimeError("No lesion-background pixels were found in validation.")
 
     # ---------------------------------------------------------
     # 1. Three-group probability histogram
     # ---------------------------------------------------------
     normal_values = torch.cat(normal_probs).numpy()
     lesion_values = torch.cat(lesion_probs).numpy()
-    background_values = torch.cat(
-        lesion_background_probs
-    ).numpy()
+    background_values = torch.cat(lesion_background_probs).numpy()
 
     plt.figure(figsize=(10, 5))
 
@@ -223,9 +193,7 @@ def main():
     plt.legend()
     plt.tight_layout()
 
-    histogram_path = (
-        OUTPUT_DIR / "three_group_probability_histogram.png"
-    )
+    histogram_path = OUTPUT_DIR / "three_group_probability_histogram.png"
 
     plt.savefig(histogram_path, dpi=150)
     plt.close()
@@ -295,18 +263,14 @@ def main():
             overlay[fn] = [0.0, 0.0, 1.0]
 
             axes[row, 4].imshow(overlay)
-            axes[row, 4].set_title(
-                "Overlay: TP green, FP red, FN blue"
-            )
+            axes[row, 4].set_title("Overlay: TP green, FP red, FN blue")
 
             for ax in axes[row]:
                 ax.axis("off")
 
         fig.tight_layout()
 
-        example_path = (
-            OUTPUT_DIR / f"{label.lower()}_examples_detailed.png"
-        )
+        example_path = OUTPUT_DIR / f"{label.lower()}_examples_detailed.png"
 
         fig.savefig(example_path, dpi=150)
         plt.close(fig)
@@ -324,10 +288,7 @@ def main():
         print(f"  90th percentile: {torch.quantile(tensor, 0.90).item():.4f}")
         print(f"  95th percentile: {torch.quantile(tensor, 0.95).item():.4f}")
         print(f"  99th percentile: {torch.quantile(tensor, 0.99).item():.4f}")
-        print(
-            f"  Fraction >= {THRESHOLD:.2f}: "
-            f"{(tensor >= THRESHOLD).float().mean().item():.4f}"
-        )
+        print(f"  Fraction >= {THRESHOLD:.2f}: {(tensor >= THRESHOLD).float().mean().item():.4f}")
 
     print("=" * 60)
     print("Prediction probability analysis")
@@ -346,13 +307,10 @@ def main():
     )
     print_distribution("Ground-truth lesion pixels", lesion_values)
 
-    normal_positive_fractions = [
-        item["positive_fraction"] for item in normal_image_stats
-    ]
+    normal_positive_fractions = [item["positive_fraction"] for item in normal_image_stats]
 
-    normal_fp_rate = (
-        sum(value > 0 for value in normal_positive_fractions)
-        / max(len(normal_positive_fractions), 1)
+    normal_fp_rate = sum(value > 0 for value in normal_positive_fractions) / max(
+        len(normal_positive_fractions), 1
     )
 
     print("\nPer-image summary:")

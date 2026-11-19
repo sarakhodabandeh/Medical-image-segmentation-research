@@ -1,6 +1,5 @@
 import argparse
 import gc
-import sys
 from pathlib import Path
 
 import torch
@@ -8,15 +7,13 @@ import torch.nn as nn
 import yaml
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
-from src.models.unet import UNet
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
+from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
 
 def resolve_path(value):
@@ -89,9 +86,7 @@ def main():
             weight_decay=config["training"]["weight_decay"],
         )
         pos_weight = config["loss"].get("pos_weight", 1.0)
-        bce_fn = nn.BCEWithLogitsLoss(
-            pos_weight=torch.tensor([pos_weight], device=device)
-        )
+        bce_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight], device=device))
 
         try:
             batch = next(iter(loader))
@@ -109,9 +104,7 @@ def main():
                 targets = masks.flatten(start_dim=1)
                 intersection = (probs * targets).sum(dim=1)
                 denominator = probs.sum(dim=1) + targets.sum(dim=1)
-                dice_loss = 1.0 - (
-                    (2.0 * intersection + 1.0) / (denominator + 1.0)
-                ).mean()
+                dice_loss = 1.0 - ((2.0 * intersection + 1.0) / (denominator + 1.0)).mean()
                 loss = (
                     config["loss"]["bce_weight"] * bce_fn(logits, masks)
                     + config["loss"]["dice_weight"] * dice_loss
@@ -120,10 +113,10 @@ def main():
             loss.backward()
             torch.cuda.synchronize()
 
-            allocated = torch.cuda.max_memory_allocated() / (1024 ** 3)
-            reserved = torch.cuda.max_memory_reserved() / (1024 ** 3)
+            allocated = torch.cuda.max_memory_allocated() / (1024**3)
+            reserved = torch.cuda.max_memory_reserved() / (1024**3)
             free_bytes, total_bytes = torch.cuda.mem_get_info()
-            free_gb = free_bytes / (1024 ** 3)
+            free_gb = free_bytes / (1024**3)
 
             print(
                 f"Batch {batch_size:>2}: PASS | "

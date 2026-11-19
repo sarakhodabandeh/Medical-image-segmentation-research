@@ -8,10 +8,8 @@ import yaml
 from torch.utils.data import DataLoader
 
 from src.datasets.bus_uclm import BUSUCLMDataset
-from src.datasets.preprocessing import resize_with_padding, resize_with_constant_padding
+from src.datasets.preprocessing import resize_with_constant_padding, resize_with_padding
 from src.models.unet import UNet
-
-
 from src.utils.paths import PROJECT_ROOT
 
 DEFAULT_SEEDS = [42, 123, 2025, 7, 99]
@@ -20,7 +18,6 @@ DEFAULT_SEEDS = [42, 123, 2025, 7, 99]
 def resolve_path(value):
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
-
 
 
 def preprocess(images, masks, size, padding_mode):
@@ -64,24 +61,26 @@ def evaluate_model(model, loader, device, image_size, padding_mode, use_amp, run
                 total_pixels = int(pred.numel())
 
                 is_lesion = label in ("Benign", "Malignant")
-                rows.append({
-                    "run": run_name,
-                    "filename": batch["filename"][i],
-                    "patient_id": batch["patient_id"][i],
-                    "label": label,
-                    "tp_pixels": tp,
-                    "fp_pixels": fp,
-                    "fn_pixels": fn,
-                    "tn_pixels": tn,
-                    "dice": ratio(2 * tp, 2 * tp + fp + fn) if is_lesion else np.nan,
-                    "iou": ratio(tp, tp + fp + fn) if is_lesion else np.nan,
-                    "pixel_recall": ratio(tp, tp + fn) if is_lesion else np.nan,
-                    "pixel_precision": ratio(tp, tp + fp) if is_lesion else np.nan,
-                    "false_positive_area_fraction": ratio(fp, total_pixels),
-                    "normal_false_positive_image": (
-                        int(bool(pred.any().item())) if label == "Normal" else np.nan
-                    ),
-                })
+                rows.append(
+                    {
+                        "run": run_name,
+                        "filename": batch["filename"][i],
+                        "patient_id": batch["patient_id"][i],
+                        "label": label,
+                        "tp_pixels": tp,
+                        "fp_pixels": fp,
+                        "fn_pixels": fn,
+                        "tn_pixels": tn,
+                        "dice": ratio(2 * tp, 2 * tp + fp + fn) if is_lesion else np.nan,
+                        "iou": ratio(tp, tp + fp + fn) if is_lesion else np.nan,
+                        "pixel_recall": ratio(tp, tp + fn) if is_lesion else np.nan,
+                        "pixel_precision": ratio(tp, tp + fp) if is_lesion else np.nan,
+                        "false_positive_area_fraction": ratio(fp, total_pixels),
+                        "normal_false_positive_image": (
+                            int(bool(pred.any().item())) if label == "Normal" else np.nan
+                        ),
+                    }
+                )
     return pd.DataFrame(rows)
 
 

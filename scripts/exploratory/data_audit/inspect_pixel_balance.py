@@ -1,15 +1,11 @@
-import sys
-from pathlib import Path
 from collections import Counter
 
-import torch
-from torch.utils.data import DataLoader
 import torch.nn.functional as F
-
-
-from src.utils.paths import PROJECT_ROOT
+from torch.utils.data import DataLoader
 
 from src.datasets.bus_uclm import BUSUCLMDataset
+
+
 def main():
     dataset = BUSUCLMDataset(split="train")
     loader = DataLoader(dataset, batch_size=4, shuffle=False)

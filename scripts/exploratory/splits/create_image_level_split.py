@@ -1,9 +1,5 @@
-import sys
-from pathlib import Path
-
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
 
 from src.utils.paths import PROJECT_ROOT
 
@@ -54,9 +50,7 @@ def main():
         ignore_index=True,
     )
 
-    result = result[
-        ["filename", "patient_id", "label", "split"]
-    ].sort_values(["split", "filename"])
+    result = result[["filename", "patient_id", "label", "split"]].sort_values(["split", "filename"])
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     result.to_csv(OUTPUT, index=False)
@@ -68,15 +62,9 @@ def main():
 
     print("\nUnique patients by split:")
     for split, group in result.groupby("split"):
-        print(
-            f"{split}: {len(group)} images, "
-            f"{group['patient_id'].nunique()} patients"
-        )
+        print(f"{split}: {len(group)} images, {group['patient_id'].nunique()} patients")
 
-    patient_sets = {
-        split: set(group["patient_id"])
-        for split, group in result.groupby("split")
-    }
+    patient_sets = {split: set(group["patient_id"]) for split, group in result.groupby("split")}
 
     print("\nPatient overlap (expected for image-level splitting):")
     for a, b in [("train", "val"), ("train", "test"), ("val", "test")]:

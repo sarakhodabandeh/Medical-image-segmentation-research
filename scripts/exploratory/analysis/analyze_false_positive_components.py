@@ -1,29 +1,23 @@
-import sys
 import csv
-from pathlib import Path
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 from scipy import ndimage
-
-
-from src.utils.paths import PROJECT_ROOT as ROOT
+from torch.utils.data import DataLoader
 
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT as ROOT
 
-
-CHECKPOINT = (
-    ROOT / "results" / "unet_aspect_ratio_pw5" / "best_model.pt"
-)
+CHECKPOINT = ROOT / "results" / "unet_aspect_ratio_pw5" / "best_model.pt"
 
 OUTPUT_DIR = ROOT / "results" / "false_positive_components"
 
 THRESHOLDS = [0.60, 0.75]
 MIN_COMPONENT_SIZES = [0, 10, 25, 50, 100, 200]
 BATCH_SIZE = 4
+
 
 def remove_small_components(binary_mask, min_size):
     """Remove connected foreground components smaller than min_size."""
@@ -55,13 +49,9 @@ def calculate_dice(pred, target):
 
 def main():
     if not CHECKPOINT.exists():
-        raise FileNotFoundError(
-            f"Checkpoint not found: {CHECKPOINT}"
-        )
+        raise FileNotFoundError(f"Checkpoint not found: {CHECKPOINT}")
 
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     checkpoint = torch.load(
         CHECKPOINT,
@@ -97,19 +87,19 @@ def main():
             images = batch["image"].to(device)
             masks = batch["mask"].to(device)
 
-            images, masks = resize_with_padding(
-                images, masks, image_size
-            )
+            images, masks = resize_with_padding(images, masks, image_size)
 
             probabilities = torch.sigmoid(model(images)).cpu()
-            targets = (masks.cpu() >= 0.5)
+            targets = masks.cpu() >= 0.5
 
             for i, label in enumerate(batch["label"]):
-                records.append({
-                    "label": label,
-                    "probability": probabilities[i, 0].numpy(),
-                    "target": targets[i, 0].numpy(),
-                })
+                records.append(
+                    {
+                        "label": label,
+                        "probability": probabilities[i, 0].numpy(),
+                        "target": targets[i, 0].numpy(),
+                    }
+                )
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -132,9 +122,7 @@ def main():
                 prediction = probability >= threshold
 
                 if min_size > 0:
-                    prediction = remove_small_components(
-                        prediction, min_size
-                    )
+                    prediction = remove_small_components(prediction, min_size)
 
                 # Component statistics before filtering are useful
                 # for understanding the original false positives.
@@ -146,37 +134,25 @@ def main():
 
                     sizes = np.bincount(component_labels.ravel())[1:]
                     component_counts.append(int(number))
-                    largest_component_sizes.append(
-                        int(sizes.max()) if len(sizes) else 0
-                    )
+                    largest_component_sizes.append(int(sizes.max()) if len(sizes) else 0)
 
                     normal_images += 1
 
                     positive_fraction = float(prediction.mean())
-                    normal_positive_fractions.append(
-                        positive_fraction
-                    )
+                    normal_positive_fractions.append(positive_fraction)
 
                     if prediction.any():
                         normal_fp_images += 1
 
                 elif label in ("Benign", "Malignant"):
-                    lesion_dices.append(
-                        calculate_dice(prediction, target)
-                    )
+                    lesion_dices.append(calculate_dice(prediction, target))
 
-            mean_lesion_dice = (
-                float(np.mean(lesion_dices))
-                if lesion_dices else 0.0
-            )
+            mean_lesion_dice = float(np.mean(lesion_dices)) if lesion_dices else 0.0
 
-            normal_fp_rate = (
-                normal_fp_images / max(normal_images, 1)
-            )
+            normal_fp_rate = normal_fp_images / max(normal_images, 1)
 
             mean_normal_positive_fraction = (
-                float(np.mean(normal_positive_fractions))
-                if normal_positive_fractions else 0.0
+                float(np.mean(normal_positive_fractions)) if normal_positive_fractions else 0.0
             )
 
             row = {
@@ -184,37 +160,25 @@ def main():
                 "min_component_pixels": min_size,
                 "mean_lesion_dice": mean_lesion_dice,
                 "normal_fp_rate": normal_fp_rate,
-                "mean_normal_positive_fraction":
-                    mean_normal_positive_fraction,
-                "mean_normal_component_count":
-                    float(np.mean(component_counts))
-                    if component_counts else 0.0,
-                "mean_largest_normal_component_pixels":
-                    float(np.mean(largest_component_sizes))
-                    if largest_component_sizes else 0.0,
+                "mean_normal_positive_fraction": mean_normal_positive_fraction,
+                "mean_normal_component_count": float(np.mean(component_counts))
+                if component_counts
+                else 0.0,
+                "mean_largest_normal_component_pixels": float(np.mean(largest_component_sizes))
+                if largest_component_sizes
+                else 0.0,
             }
 
             rows.append(row)
 
-            print(
-                f"\nThreshold={threshold:.2f} | "
-                f"Min component size={min_size}"
-            )
-            print(
-                f"  Mean lesion Dice: {mean_lesion_dice:.4f}"
-            )
-            print(
-                f"  Normal image FP rate: {normal_fp_rate:.4f}"
-            )
-            print(
-                "  Mean Normal positive fraction: "
-                f"{mean_normal_positive_fraction:.4f}"
-            )
+            print(f"\nThreshold={threshold:.2f} | Min component size={min_size}")
+            print(f"  Mean lesion Dice: {mean_lesion_dice:.4f}")
+            print(f"  Normal image FP rate: {normal_fp_rate:.4f}")
+            print(f"  Mean Normal positive fraction: {mean_normal_positive_fraction:.4f}")
 
             if min_size == 0:
                 print(
-                    "  Mean Normal connected components: "
-                    f"{row['mean_normal_component_count']:.2f}"
+                    f"  Mean Normal connected components: {row['mean_normal_component_count']:.2f}"
                 )
                 print(
                     "  Mean largest Normal component (pixels): "
@@ -223,9 +187,7 @@ def main():
 
     csv_path = OUTPUT_DIR / "component_filtering_results.csv"
 
-    with csv_path.open(
-        "w", newline="", encoding="utf-8"
-    ) as file:
+    with csv_path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(
             file,
             fieldnames=list(rows[0].keys()),

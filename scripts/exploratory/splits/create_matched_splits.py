@@ -1,7 +1,5 @@
-from pathlib import Path
 import numpy as np
 import pandas as pd
-
 
 from src.utils.paths import PROJECT_ROOT
 
@@ -9,23 +7,15 @@ from src.utils.paths import PROJECT_ROOT
 # Configuration
 # --------------------------------------------------
 
-INPUT = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
-    / "bus_uclm_patient_split.csv"
-)
+INPUT = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
 
-OUTPUT_DIR = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
-    / "matched_splits"
-)
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "matched_splits"
 
 SEEDS = [42, 123, 2025, 7, 99]
 
 SPLITS = ["train", "val", "test"]
+
+
 # --------------------------------------------------
 # Load patient-level reference split
 # --------------------------------------------------
@@ -43,10 +33,7 @@ def main():
         raise ValueError("Missing values found.")
 
     # Exact class counts from the existing patient-level split
-    target_counts = (
-        pd.crosstab(df["label"], df["split"])
-        .reindex(columns=SPLITS, fill_value=0)
-    )
+    target_counts = pd.crosstab(df["label"], df["split"]).reindex(columns=SPLITS, fill_value=0)
 
     print("Target counts from patient-level reference:")
     print(target_counts)
@@ -60,7 +47,6 @@ def main():
     # --------------------------------------------------
 
     for seed in SEEDS:
-
         rng = np.random.default_rng(seed)
 
         parts = {
@@ -72,11 +58,8 @@ def main():
         # Split independently within each label.
         # This guarantees exact class counts in each split.
         for label in sorted(df["label"].unique()):
-
             label_df = (
-                df[df["label"] == label]
-                .sample(frac=1, random_state=seed)
-                .reset_index(drop=True)
+                df[df["label"] == label].sample(frac=1, random_state=seed).reset_index(drop=True)
             )
 
             counts = target_counts.loc[label]
@@ -86,16 +69,14 @@ def main():
             n_test = int(counts["test"])
 
             if n_train + n_val + n_test != len(label_df):
-                raise ValueError(
-                    f"Count mismatch for label {label}"
-                )
+                raise ValueError(f"Count mismatch for label {label}")
 
             # Independent reproducible shuffle for this label
             indices = rng.permutation(len(label_df))
 
             train_idx = indices[:n_train]
-            val_idx = indices[n_train:n_train + n_val]
-            test_idx = indices[n_train + n_val:]
+            val_idx = indices[n_train : n_train + n_val]
+            test_idx = indices[n_train + n_val :]
 
             parts["train"].append(label_df.iloc[train_idx])
             parts["val"].append(label_df.iloc[val_idx])
@@ -111,9 +92,9 @@ def main():
 
         result = pd.concat(split_frames, ignore_index=True)
 
-        result = result[
-            ["filename", "patient_id", "label", "split"]
-        ].sort_values(["split", "filename"])
+        result = result[["filename", "patient_id", "label", "split"]].sort_values(
+            ["split", "filename"]
+        )
 
         # --------------------------------------------------
         # Validation
@@ -125,18 +106,12 @@ def main():
         if result["filename"].duplicated().any():
             raise ValueError("Duplicate filename in generated split.")
 
-        actual_counts = pd.crosstab(
-            result["label"], result["split"]
-        ).reindex(
-            index=target_counts.index,
-            columns=SPLITS,
-            fill_value=0
+        actual_counts = pd.crosstab(result["label"], result["split"]).reindex(
+            index=target_counts.index, columns=SPLITS, fill_value=0
         )
 
         if not actual_counts.equals(target_counts):
-            raise ValueError(
-                f"Class distribution mismatch for seed {seed}"
-            )
+            raise ValueError(f"Class distribution mismatch for seed {seed}")
 
         # Save CSV
         output_path = OUTPUT_DIR / f"image_level_seed_{seed}.csv"
@@ -147,8 +122,7 @@ def main():
         # --------------------------------------------------
 
         patient_sets = {
-            split: set(result.loc[result["split"] == split, "patient_id"])
-            for split in SPLITS
+            split: set(result.loc[result["split"] == split, "patient_id"]) for split in SPLITS
         }
 
         overlap_tv = len(patient_sets["train"] & patient_sets["val"])
@@ -157,9 +131,9 @@ def main():
 
         summary = {
             "seed": seed,
-            "train_images": len(parts["train"][0]) + sum(
-                len(x) for x in parts["train"][1:]
-            ) if len(parts["train"]) > 1 else len(parts["train"][0]),
+            "train_images": len(parts["train"][0]) + sum(len(x) for x in parts["train"][1:])
+            if len(parts["train"]) > 1
+            else len(parts["train"][0]),
             "val_images": int((result["split"] == "val").sum()),
             "test_images": int((result["split"] == "test").sum()),
             "train_val_patient_overlap": overlap_tv,
@@ -198,6 +172,7 @@ def main():
     print("=" * 60)
     print(summary_df.to_string(index=False))
     print(f"\nSummary saved to: {summary_path}")
+
 
 if __name__ == "__main__":
     main()

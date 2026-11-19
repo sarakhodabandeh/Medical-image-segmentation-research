@@ -1,30 +1,20 @@
-import sys
-from pathlib import Path
-
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
 import torch
 from torch.utils.data import DataLoader
-
-
-from src.utils.paths import PROJECT_ROOT
 
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
-
+from src.utils.paths import PROJECT_ROOT
 
 ROOT = PROJECT_ROOT
 
 CHECKPOINTS = {
-    "epoch_005": (
-        ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_005.pt"
-    ),
-    "epoch_007": (
-        ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_007.pt"
-    ),
+    "epoch_005": (ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_005.pt"),
+    "epoch_007": (ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_007.pt"),
 }
 
 THRESHOLD = 0.50
@@ -33,13 +23,9 @@ MAX_NORMAL_EXAMPLES = 4
 
 
 def main():
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     dataset = BUSUCLMDataset(split="val")
-    loader = DataLoader(
-        dataset, batch_size=1, shuffle=False, num_workers=0
-    )
+    loader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0)
 
     output_root = ROOT / "results" / "visual_comparison_pw5_fp30"
     output_root.mkdir(parents=True, exist_ok=True)
@@ -123,9 +109,7 @@ def main():
 
                 # Green = true positive, red = false positive,
                 # blue = false negative pixels.
-                overlay = torch.zeros(
-                    (*target.shape, 3), dtype=torch.float32
-                )
+                overlay = torch.zeros((*target.shape, 3), dtype=torch.float32)
                 overlay[..., 1] = (prediction & target).float()
                 overlay[..., 0] = (prediction & ~target).float()
                 overlay[..., 2] = (~prediction & target).float()

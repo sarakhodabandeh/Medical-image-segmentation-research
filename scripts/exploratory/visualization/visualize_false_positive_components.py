@@ -1,23 +1,15 @@
-import sys
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from scipy import ndimage
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
-
-CHECKPOINT = (
-    PROJECT_ROOT / "results" / "unet_aspect_ratio_pw5" / "best_model.pt"
-)
+CHECKPOINT = PROJECT_ROOT / "results" / "unet_aspect_ratio_pw5" / "best_model.pt"
 
 OUTPUT_DIR = PROJECT_ROOT / "results" / "false_positive_visualization"
 
@@ -49,13 +41,9 @@ def prepare_image(image_tensor):
 
 def main():
     if not CHECKPOINT.exists():
-        raise FileNotFoundError(
-            f"Checkpoint not found: {CHECKPOINT}"
-        )
+        raise FileNotFoundError(f"Checkpoint not found: {CHECKPOINT}")
 
-    device = torch.device(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     checkpoint = torch.load(
         CHECKPOINT,
@@ -103,7 +91,7 @@ def main():
             )
 
             probabilities = torch.sigmoid(model(images)).cpu()
-            targets = (masks.cpu() >= 0.5)
+            targets = masks.cpu() >= 0.5
 
             for i, label in enumerate(batch["label"]):
                 if label not in saved_counts:
@@ -119,9 +107,7 @@ def main():
                 for threshold in THRESHOLDS:
                     prediction = probability >= threshold
 
-                    component_labels, number, sizes = get_components(
-                        prediction
-                    )
+                    component_labels, number, sizes = get_components(prediction)
 
                     # Different colors for different connected regions.
                     component_map = np.zeros(
@@ -138,13 +124,9 @@ def main():
                             continue
 
                         color = rng.uniform(0.2, 1.0, size=3)
-                        component_map[
-                            component_labels == component_id
-                        ] = color
+                        component_map[component_labels == component_id] = color
 
-                    fig, axes = plt.subplots(
-                        1, 5, figsize=(18, 4)
-                    )
+                    fig, axes = plt.subplots(1, 5, figsize=(18, 4))
 
                     axes[0].imshow(image)
                     axes[0].set_title(f"{label}: image")
@@ -171,18 +153,14 @@ def main():
                         vmin=0,
                         vmax=1,
                     )
-                    axes[3].set_title(
-                        f"Prediction, threshold={threshold}"
-                    )
+                    axes[3].set_title(f"Prediction, threshold={threshold}")
 
                     axes[4].imshow(image)
                     axes[4].imshow(
                         component_map,
                         alpha=0.8,
                     )
-                    axes[4].set_title(
-                        "Connected components"
-                    )
+                    axes[4].set_title("Connected components")
 
                     # Label the larger components with their pixel sizes.
                     for component_id in range(1, number + 1):
@@ -191,9 +169,7 @@ def main():
                         if size < MIN_COMPONENT_SIZE_TO_LABEL:
                             continue
 
-                        ys, xs = np.where(
-                            component_labels == component_id
-                        )
+                        ys, xs = np.where(component_labels == component_id)
 
                         if len(xs) == 0:
                             continue

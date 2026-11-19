@@ -1,5 +1,4 @@
 import argparse
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -8,16 +7,13 @@ import torch
 import yaml
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT as ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
 from src.models.unet import UNet
-
+from src.utils.paths import PROJECT_ROOT as ROOT
 
 THRESHOLDS = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90]
 
@@ -25,6 +21,8 @@ THRESHOLDS = [0.10, 0.25, 0.40, 0.50, 0.60, 0.75, 0.90]
 def project_path(p):
     p = Path(p)
     return p if p.is_absolute() else ROOT / p
+
+
 def preprocess(images, masks, size, padding):
     if padding == "replicate":
         return resize_with_padding(images, masks, size)
@@ -113,7 +111,7 @@ def main():
 
                 for i in range(probs.shape[0]):
                     p = probs[i, 0].detach().cpu().numpy()
-                    target = (masks[i, 0].detach().cpu().numpy() >= 0.5)
+                    target = masks[i, 0].detach().cpu().numpy() >= 0.5
                     label = batch["label"][i]
                     lesion = label in ("Benign", "Malignant")
 
@@ -138,9 +136,7 @@ def main():
                         if lesion:
                             tp = int(np.logical_and(pred, target).sum())
                             denom = int(pred.sum() + target.sum())
-                            row[f"dice_at_{t:.2f}"] = (
-                                2 * tp / denom if denom else 1.0
-                            )
+                            row[f"dice_at_{t:.2f}"] = 2 * tp / denom if denom else 1.0
                         else:
                             row[f"normal_any_fp_at_{t:.2f}"] = int(pred.any())
 
@@ -163,9 +159,9 @@ def main():
             }
             if label == "Normal":
                 for t in THRESHOLDS:
-                    summary[f"normal_image_fp_rate_at_{t:.2f}"] = (
-                        subset[f"normal_any_fp_at_{t:.2f}"].mean()
-                    )
+                    summary[f"normal_image_fp_rate_at_{t:.2f}"] = subset[
+                        f"normal_any_fp_at_{t:.2f}"
+                    ].mean()
             else:
                 for t in THRESHOLDS:
                     summary[f"macro_dice_at_{t:.2f}"] = subset[f"dice_at_{t:.2f}"].mean()

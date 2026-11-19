@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 
@@ -19,7 +18,6 @@ class DoubleConv(nn.Module):
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
-
             nn.Conv2d(
                 out_channels,
                 out_channels,

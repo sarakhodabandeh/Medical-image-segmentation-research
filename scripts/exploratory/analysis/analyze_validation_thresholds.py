@@ -1,28 +1,21 @@
 import argparse
 import csv
-import sys
 from pathlib import Path
 
 import numpy as np
 import torch
-import yaml
 from torch.utils.data import DataLoader
-
-
-from src.utils.paths import PROJECT_ROOT
 
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
+
+DEFAULT_CHECKPOINT_DIR = PROJECT_ROOT / "results" / "unet_replicate_pw5"
+
+DEFAULT_OUTPUT = DEFAULT_CHECKPOINT_DIR / "validation_threshold_analysis.csv"
 
 
-DEFAULT_CHECKPOINT_DIR = (
-    PROJECT_ROOT / "results" / "unet_replicate_pw5"
-)
-
-DEFAULT_OUTPUT = (
-    DEFAULT_CHECKPOINT_DIR / "validation_threshold_analysis.csv"
-)
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -40,15 +33,9 @@ def main():
         default=str(DEFAULT_OUTPUT),
         help="Output CSV path",
     )
-    parser.add_argument(
-        "--threshold-start", type=float, default=0.10
-    )
-    parser.add_argument(
-        "--threshold-stop", type=float, default=0.90
-    )
-    parser.add_argument(
-        "--threshold-step", type=float, default=0.05
-    )
+    parser.add_argument("--threshold-start", type=float, default=0.10)
+    parser.add_argument("--threshold-stop", type=float, default=0.90)
+    parser.add_argument("--threshold-step", type=float, default=0.05)
     args = parser.parse_args()
 
     checkpoint_dir = Path(args.checkpoint_dir)
@@ -57,21 +44,15 @@ def main():
 
     checkpoint_paths = sorted(checkpoint_dir.glob("epoch_*.pt"))
     if not checkpoint_paths:
-        raise FileNotFoundError(
-            f"No epoch_*.pt checkpoints found in {checkpoint_dir}"
-        )
+        raise FileNotFoundError(f"No epoch_*.pt checkpoints found in {checkpoint_dir}")
 
     # Load the first checkpoint to recover the exact training configuration.
-    first_ckpt = torch.load(
-        checkpoint_paths[0], map_location="cpu", weights_only=False
-    )
+    first_ckpt = torch.load(checkpoint_paths[0], map_location="cpu", weights_only=False)
     config = first_ckpt["config"]
     seed = int(first_ckpt.get("seed", config["experiment"]["seed"]))
     padding_mode = first_ckpt.get("padding_mode", "replicate")
     if padding_mode != "replicate":
-        raise ValueError(
-            f"This script currently expects replicate padding, got {padding_mode!r}"
-        )
+        raise ValueError(f"This script currently expects replicate padding, got {padding_mode!r}")
 
     # The saved config points to the split CSV used by this experiment.
     split_csv = Path(config["data"]["split_csv"])
@@ -126,16 +107,12 @@ def main():
     rows = []
 
     for checkpoint_path in checkpoint_paths:
-        checkpoint = torch.load(
-            checkpoint_path, map_location=device, weights_only=False
-        )
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
 
         ckpt_seed = int(checkpoint.get("seed", seed))
         ckpt_padding = checkpoint.get("padding_mode", padding_mode)
         if ckpt_seed != seed or ckpt_padding != padding_mode:
-            raise ValueError(
-                f"Inconsistent checkpoint metadata in {checkpoint_path.name}"
-            )
+            raise ValueError(f"Inconsistent checkpoint metadata in {checkpoint_path.name}")
 
         model.load_state_dict(checkpoint["model_state_dict"])
         model.eval()
@@ -147,9 +124,7 @@ def main():
             for batch in loader:
                 images = batch["image"].to(device, non_blocking=True)
                 masks = batch["mask"].to(device, non_blocking=True)
-                images, masks = resize_with_padding(
-                    images, masks, image_size
-                )
+                images, masks = resize_with_padding(images, masks, image_size)
 
                 with torch.amp.autocast(
                     device_type=device.type,
@@ -169,15 +144,11 @@ def main():
                         )
                     )
 
-        lesion_records = [
-            r for r in records if r[0] in ("Benign", "Malignant")
-        ]
+        lesion_records = [r for r in records if r[0] in ("Benign", "Malignant")]
         normal_records = [r for r in records if r[0] == "Normal"]
 
         if not lesion_records or not normal_records:
-            raise RuntimeError(
-                "Validation set must contain both lesion and Normal images."
-            )
+            raise RuntimeError("Validation set must contain both lesion and Normal images.")
 
         for threshold in thresholds:
             lesion_dices = []
@@ -190,14 +161,8 @@ def main():
                 target_area = target.sum()
 
                 dice_denominator = pred_area + target_area
-                dice = (
-                    2.0 * intersection / dice_denominator
-                    if dice_denominator > 0 else 1.0
-                )
-                recall = (
-                    intersection / target_area
-                    if target_area > 0 else float("nan")
-                )
+                dice = 2.0 * intersection / dice_denominator if dice_denominator > 0 else 1.0
+                recall = intersection / target_area if target_area > 0 else float("nan")
                 lesion_dices.append(dice)
                 lesion_recalls.append(recall)
 

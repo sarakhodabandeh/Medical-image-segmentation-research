@@ -1,7 +1,6 @@
 import argparse
-import pandas as pd
-from pathlib import Path
 
+import pandas as pd
 
 from src.utils.paths import PROJECT_ROOT, project_path
 
@@ -12,12 +11,11 @@ parser = argparse.ArgumentParser(
     description="Aggregation sensitivity of paired split-strategy differences."
 )
 parser.add_argument(
-    "--metrics-csv", default=str(INPUT),
+    "--metrics-csv",
+    default=str(INPUT),
     help="Per-image metrics CSV from evaluate_paired_test.py.",
 )
-parser.add_argument(
-    "--output-dir", default=str(OUTPUT), help="Folder for the output CSV."
-)
+parser.add_argument("--output-dir", default=str(OUTPUT), help="Folder for the output CSV.")
 args = parser.parse_args()
 INPUT = project_path(args.metrics_csv)
 OUTPUT = project_path(args.output_dir)
@@ -32,12 +30,7 @@ keys = ["seed", "filename", "patient_id", "label"]
 image = df[df["split_type"] == "image"].copy()
 patient = df[df["split_type"] == "patient"].copy()
 
-paired = image.merge(
-    patient,
-    on=keys,
-    suffixes=("_image", "_patient"),
-    validate="one_to_one"
-)
+paired = image.merge(patient, on=keys, suffixes=("_image", "_patient"), validate="one_to_one")
 
 metrics = {
     "lesion_dice": ("dice", "lesion"),
@@ -55,20 +48,14 @@ for metric_name, (column, group_type) in metrics.items():
     else:
         data = paired[paired["label"] == "Normal"].copy()
 
-    data["difference"] = (
-        data[f"{column}_patient"] - data[f"{column}_image"]
-    )
+    data["difference"] = data[f"{column}_patient"] - data[f"{column}_image"]
 
     # 1. Equal weight per seed
     seed_means = data.groupby("seed")["difference"].mean()
     seed_weighted = seed_means.mean()
 
     # 2. Equal weight per patient
-    patient_seed = (
-        data.groupby(["patient_id", "seed"])["difference"]
-        .mean()
-        .reset_index()
-    )
+    patient_seed = data.groupby(["patient_id", "seed"])["difference"].mean().reset_index()
     patient_means = patient_seed.groupby("patient_id")["difference"].mean()
     patient_weighted = patient_means.mean()
 
@@ -76,16 +63,18 @@ for metric_name, (column, group_type) in metrics.items():
     image_means = data.groupby("filename")["difference"].mean()
     unique_image_weighted = image_means.mean()
 
-    all_results.append({
-        "metric": metric_name,
-        "n_seeds": data["seed"].nunique(),
-        "n_patient_seed_pairs": len(patient_seed),
-        "n_unique_patients": patient_means.size,
-        "n_unique_images": image_means.size,
-        "equal_weight_per_seed": seed_weighted,
-        "equal_weight_per_patient": patient_weighted,
-        "equal_weight_per_unique_image": unique_image_weighted,
-    })
+    all_results.append(
+        {
+            "metric": metric_name,
+            "n_seeds": data["seed"].nunique(),
+            "n_patient_seed_pairs": len(patient_seed),
+            "n_unique_patients": patient_means.size,
+            "n_unique_images": image_means.size,
+            "equal_weight_per_seed": seed_weighted,
+            "equal_weight_per_patient": patient_weighted,
+            "equal_weight_per_unique_image": unique_image_weighted,
+        }
+    )
 
     print(f"\n--- {metric_name} ---")
     print(f"Equal weight per seed:        {seed_weighted:.6f}")

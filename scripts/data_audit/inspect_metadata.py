@@ -1,31 +1,20 @@
-
-import zipfile
 import csv
-from pathlib import Path
-from collections import defaultdict, Counter
+import zipfile
+from collections import Counter, defaultdict
 
 from src.utils.paths import PROJECT_ROOT
 
 ZIP_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
+    PROJECT_ROOT / "data" / "raw" / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
 )
 
-ROOT = (
-    "BUS-UCLM Breast ultrasound lesion segmentation dataset/"
-    "BUS-UCLM"
-)
+ROOT = "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
 
 patients = defaultdict(list)
 
 with zipfile.ZipFile(ZIP_PATH, "r") as archive:
     with archive.open(f"{ROOT}/INFO.csv") as file:
-        rows = csv.DictReader(
-            (line.decode("utf-8-sig") for line in file),
-            delimiter=";"
-        )
+        rows = csv.DictReader((line.decode("utf-8-sig") for line in file), delimiter=";")
 
         for row in rows:
             filename = row["Image"]

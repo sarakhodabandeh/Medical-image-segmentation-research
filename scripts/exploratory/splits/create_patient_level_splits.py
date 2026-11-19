@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-from pathlib import Path
-
 
 from src.utils.paths import PROJECT_ROOT
 
@@ -37,11 +35,7 @@ def evaluate_assignment(assignment, patients, patient_table):
     report = {}
 
     for split in SPLITS:
-        selected = [
-            patient
-            for patient in patients
-            if assignment[patient] == split
-        ]
+        selected = [patient for patient in patients if assignment[patient] == split]
 
         counts = patient_table.loc[selected].sum()
         total_images = int(counts.sum())
@@ -53,17 +47,13 @@ def evaluate_assignment(assignment, patients, patient_table):
 
         target_total = TARGET_IMAGES[split]
 
-        score += (
-            (total_images - target_total) / target_total
-        ) ** 2
+        score += ((total_images - target_total) / target_total) ** 2
 
         for label in TARGET_CLASS_COUNTS:
             target = TARGET_CLASS_COUNTS[label][split]
             actual = int(counts[label])
 
-            score += (
-                (actual - target) / max(target, 1)
-            ) ** 2
+            score += ((actual - target) / max(target, 1)) ** 2
 
     return score, report
 
@@ -88,9 +78,7 @@ def main():
     patients = sorted(df["patient_id"].unique())
 
     if len(patients) != 37:
-        raise ValueError(
-            f"Expected 37 patients, found {len(patients)}"
-        )
+        raise ValueError(f"Expected 37 patients, found {len(patients)}")
 
     patient_table = pd.crosstab(
         df["patient_id"],
@@ -101,9 +89,7 @@ def main():
         if label not in patient_table.columns:
             patient_table[label] = 0
 
-    patient_table = patient_table[
-        ["Benign", "Malignant", "Normal"]
-    ]
+    patient_table = patient_table[["Benign", "Malignant", "Normal"]]
 
     patient_table = patient_table.reindex(patients)
 
@@ -146,39 +132,25 @@ def main():
 
         result = df.copy()
 
-        result["split"] = result["patient_id"].map(
-            best_assignment
-        )
+        result["split"] = result["patient_id"].map(best_assignment)
 
         if result["split"].isna().any():
             raise ValueError("Some patients were not assigned.")
 
         patient_sets = {
-            split: set(
-                result.loc[result["split"] == split, "patient_id"]
-            )
-            for split in SPLITS
+            split: set(result.loc[result["split"] == split, "patient_id"]) for split in SPLITS
         }
 
         for i in range(len(SPLITS)):
             for j in range(i + 1, len(SPLITS)):
-                overlap = (
-                    patient_sets[SPLITS[i]]
-                    & patient_sets[SPLITS[j]]
-                )
+                overlap = patient_sets[SPLITS[i]] & patient_sets[SPLITS[j]]
 
                 if overlap:
-                    raise ValueError(
-                        f"Patient overlap found: {overlap}"
-                    )
+                    raise ValueError(f"Patient overlap found: {overlap}")
 
-        output_path = (
-            OUTPUT_DIR / f"patient_level_seed_{seed}.csv"
-        )
+        output_path = OUTPUT_DIR / f"patient_level_seed_{seed}.csv"
 
-        result[
-            ["filename", "patient_id", "label", "split"]
-        ].sort_values(
+        result[["filename", "patient_id", "label", "split"]].sort_values(
             ["split", "filename"]
         ).to_csv(output_path, index=False)
 
@@ -211,15 +183,11 @@ def main():
         for split in SPLITS:
             selected = result[result["split"] == split]
 
-            summary[f"{split}_patients"] = (
-                selected["patient_id"].nunique()
-            )
+            summary[f"{split}_patients"] = selected["patient_id"].nunique()
             summary[f"{split}_images"] = len(selected)
 
             for label in ["Benign", "Malignant", "Normal"]:
-                summary[f"{split}_{label}"] = int(
-                    (selected["label"] == label).sum()
-                )
+                summary[f"{split}_{label}"] = int((selected["label"] == label).sum())
 
         all_summaries.append(summary)
 

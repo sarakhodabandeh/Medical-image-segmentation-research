@@ -1,9 +1,7 @@
 import argparse
 from itertools import combinations
-from pathlib import Path
 
 import pandas as pd
-
 
 from src.utils.paths import PROJECT_ROOT, project_path
 
@@ -16,12 +14,11 @@ def parse_args():
         description="Audit patient overlap between the image-level and patient-level splits."
     )
     parser.add_argument(
-        "--metrics-csv", default=str(INPUT),
+        "--metrics-csv",
+        default=str(INPUT),
         help="Per-image metrics CSV from evaluate_paired_test.py.",
     )
-    parser.add_argument(
-        "--output-dir", default=str(OUTPUT), help="Folder for the audit CSVs."
-    )
+    parser.add_argument("--output-dir", default=str(OUTPUT), help="Folder for the audit CSVs.")
     return parser.parse_args()
 
 
@@ -35,9 +32,7 @@ def main():
     if missing:
         raise ValueError(f"Missing columns: {sorted(missing)}")
 
-    test = df[
-        ["seed", "split_type", "filename", "patient_id", "label"]
-    ].drop_duplicates()
+    test = df[["seed", "split_type", "filename", "patient_id", "label"]].drop_duplicates()
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -55,21 +50,28 @@ def main():
         rows = []
         for seed_a, seed_b in combinations(sorted(patient_sets), 2):
             shared = patient_sets[seed_a] & patient_sets[seed_b]
-            rows.append({
-                "split_type": split,
-                "seed_a": seed_a,
-                "seed_b": seed_b,
-                "patients_a": len(patient_sets[seed_a]),
-                "patients_b": len(patient_sets[seed_b]),
-                "shared_patients": len(shared),
-                "shared_patient_ids": ";".join(sorted(shared)),
-            })
+            rows.append(
+                {
+                    "split_type": split,
+                    "seed_a": seed_a,
+                    "seed_b": seed_b,
+                    "patients_a": len(patient_sets[seed_a]),
+                    "patients_b": len(patient_sets[seed_b]),
+                    "shared_patients": len(shared),
+                    "shared_patient_ids": ";".join(sorted(shared)),
+                }
+            )
 
         overlap = pd.DataFrame(
             rows,
             columns=[
-                "split_type", "seed_a", "seed_b", "patients_a",
-                "patients_b", "shared_patients", "shared_patient_ids",
+                "split_type",
+                "seed_a",
+                "seed_b",
+                "patients_a",
+                "patients_b",
+                "shared_patients",
+                "shared_patient_ids",
             ],
         )
         print("\\nPairwise overlap:")

@@ -1,7 +1,6 @@
 import argparse
 import copy
 import csv
-import sys
 from pathlib import Path
 
 import torch
@@ -9,20 +8,19 @@ import torch.nn as nn
 import yaml
 from torch.utils.data import DataLoader
 
-
-from src.utils.paths import PROJECT_ROOT
-
 from src.datasets.bus_uclm import BUSUCLMDataset
-from src.models.unet import UNet
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
+from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
 
 def resolve_path(value):
     path = Path(value)
     return path if path.is_absolute() else PROJECT_ROOT / path
+
 
 def preprocess_batch(images, masks, size, padding_mode):
     if padding_mode == "replicate":
@@ -47,15 +45,17 @@ def bn_snapshot(model):
     rows = []
     for name, module in model.named_modules():
         if isinstance(module, nn.BatchNorm2d):
-            rows.append({
-                "layer": name,
-                "num_features": module.num_features,
-                "running_mean_abs_mean": module.running_mean.detach().abs().mean().item(),
-                "running_var_mean": module.running_var.detach().mean().item(),
-                "running_var_min": module.running_var.detach().min().item(),
-                "running_var_max": module.running_var.detach().max().item(),
-                "num_batches_tracked": int(module.num_batches_tracked.item()),
-            })
+            rows.append(
+                {
+                    "layer": name,
+                    "num_features": module.num_features,
+                    "running_mean_abs_mean": module.running_mean.detach().abs().mean().item(),
+                    "running_var_mean": module.running_var.detach().mean().item(),
+                    "running_var_min": module.running_var.detach().min().item(),
+                    "running_var_max": module.running_var.detach().max().item(),
+                    "num_batches_tracked": int(module.num_batches_tracked.item()),
+                }
+            )
     return rows
 
 
@@ -66,9 +66,7 @@ def evaluate(model, loader, device, image_size, padding_mode, epoch, variant):
         for batch in loader:
             images = batch["image"].to(device, non_blocking=True)
             masks = batch["mask"].to(device, non_blocking=True)
-            images, masks = preprocess_batch(
-                images, masks, image_size, padding_mode
-            )
+            images, masks = preprocess_batch(images, masks, image_size, padding_mode)
             probs = torch.sigmoid(model(images).float())
 
             for i, label in enumerate(batch["label"]):
@@ -88,20 +86,22 @@ def evaluate(model, loader, device, image_size, padding_mode, epoch, variant):
                     dice = float("nan")
                     recall = float("nan")
 
-                rows.append({
-                    "epoch": epoch,
-                    "variant": variant,
-                    "filename": batch["filename"][i],
-                    "patient_id": batch["patient_id"][i],
-                    "label": label,
-                    "dice_at_0_5": dice,
-                    "pixel_recall_at_0_5": recall,
-                    "normal_any_fp_at_0_5": positive if label == "Normal" else "",
-                    "predicted_area_fraction": pred.float().mean().item(),
-                    "prob_mean": prob.mean().item(),
-                    "prob_q95": torch.quantile(prob.flatten(), 0.95).item(),
-                    "prob_max": prob.max().item(),
-                })
+                rows.append(
+                    {
+                        "epoch": epoch,
+                        "variant": variant,
+                        "filename": batch["filename"][i],
+                        "patient_id": batch["patient_id"][i],
+                        "label": label,
+                        "dice_at_0_5": dice,
+                        "pixel_recall_at_0_5": recall,
+                        "normal_any_fp_at_0_5": positive if label == "Normal" else "",
+                        "predicted_area_fraction": pred.float().mean().item(),
+                        "prob_mean": prob.mean().item(),
+                        "prob_q95": torch.quantile(prob.flatten(), 0.95).item(),
+                        "prob_max": prob.max().item(),
+                    }
+                )
     return rows
 
 
@@ -114,14 +114,18 @@ def summarize(rows):
         "lesion_images": len(lesion),
         "normal_images": len(normal),
         "lesion_macro_dice": sum(dice_values) / len(dice_values) if dice_values else float("nan"),
-        "lesion_macro_pixel_recall": sum(recall_values) / len(recall_values) if recall_values else float("nan"),
+        "lesion_macro_pixel_recall": sum(recall_values) / len(recall_values)
+        if recall_values
+        else float("nan"),
         "normal_fp_image_rate": (
             sum(int(r["normal_any_fp_at_0_5"]) for r in normal) / len(normal)
-            if normal else float("nan")
+            if normal
+            else float("nan")
         ),
         "normal_mean_predicted_area_fraction": (
             sum(r["predicted_area_fraction"] for r in normal) / len(normal)
-            if normal else float("nan")
+            if normal
+            else float("nan")
         ),
     }
 
@@ -157,12 +161,20 @@ def main():
     val_ds = BUSUCLMDataset(split="val", split_path=split_path)
 
     train_loader = DataLoader(
-        train_ds, batch_size=args.batch_size, shuffle=False,
-        num_workers=0, pin_memory=(device.type == "cuda"), drop_last=False,
+        train_ds,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=(device.type == "cuda"),
+        drop_last=False,
     )
     val_loader = DataLoader(
-        val_ds, batch_size=args.batch_size, shuffle=False,
-        num_workers=0, pin_memory=(device.type == "cuda"), drop_last=False,
+        val_ds,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=(device.type == "cuda"),
+        drop_last=False,
     )
 
     all_rows = []
@@ -182,9 +194,7 @@ def main():
             print(f"WARNING: missing checkpoint: {ckpt_path}")
             continue
 
-        checkpoint = torch.load(
-            ckpt_path, map_location=device, weights_only=False
-        )
+        checkpoint = torch.load(ckpt_path, map_location=device, weights_only=False)
         cfg = checkpoint.get("config", default_config)
         image_size = cfg["data"]["image_size"]
         padding_mode = checkpoint.get("padding_mode", "replicate")
@@ -194,8 +204,13 @@ def main():
 
         # Baseline evaluation with the checkpoint's original BN buffers.
         baseline_rows = evaluate(
-            original_model, val_loader, device, image_size,
-            padding_mode, epoch, "original_bn",
+            original_model,
+            val_loader,
+            device,
+            image_size,
+            padding_mode,
+            epoch,
+            "original_bn",
         )
         all_rows.extend(baseline_rows)
         baseline_summary = summarize(baseline_rows)
@@ -204,8 +219,7 @@ def main():
         # Recalibrate a separate copy: reset only BN running buffers.
         calibrated_model = copy.deepcopy(original_model)
         bn_modules = [
-            module for module in calibrated_model.modules()
-            if isinstance(module, nn.BatchNorm2d)
+            module for module in calibrated_model.modules() if isinstance(module, nn.BatchNorm2d)
         ]
         for module in bn_modules:
             module.reset_running_stats()
@@ -218,21 +232,22 @@ def main():
             for batch in train_loader:
                 images = batch["image"].to(device, non_blocking=True)
                 masks = batch["mask"].to(device, non_blocking=True)
-                images, _ = preprocess_batch(
-                    images, masks, image_size, padding_mode
-                )
+                images, _ = preprocess_batch(images, masks, image_size, padding_mode)
                 _ = calibrated_model(images)
 
         calibrated_model.eval()
         calibrated_rows = evaluate(
-            calibrated_model, val_loader, device, image_size,
-            padding_mode, epoch, "recalibrated_bn",
+            calibrated_model,
+            val_loader,
+            device,
+            image_size,
+            padding_mode,
+            epoch,
+            "recalibrated_bn",
         )
         all_rows.extend(calibrated_rows)
         calibrated_summary = summarize(calibrated_rows)
-        summary_rows.append({
-            "epoch": epoch, "variant": "recalibrated_bn", **calibrated_summary
-        })
+        summary_rows.append({"epoch": epoch, "variant": "recalibrated_bn", **calibrated_summary})
 
         for variant, model in [
             ("original_bn", original_model),
@@ -263,8 +278,10 @@ def main():
 
     print("\nFinished.")
     print(f"Results folder: {output_dir}")
-    print("Files: bn_recalibration_per_image.csv, "
-          "bn_recalibration_summary.csv, bn_recalibration_layer_stats.csv")
+    print(
+        "Files: bn_recalibration_per_image.csv, "
+        "bn_recalibration_summary.csv, bn_recalibration_layer_stats.csv"
+    )
 
 
 if __name__ == "__main__":

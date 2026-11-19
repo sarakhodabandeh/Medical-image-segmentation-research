@@ -1,37 +1,29 @@
-import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
-
+from src.datasets.bus_uclm import BUSUCLMDataset
 from src.utils.paths import PROJECT_ROOT
 
-from src.datasets.bus_uclm import BUSUCLMDataset
-
-
 TARGET_FILENAMES = [
     "CAWI_005.png",
     "CAWI_010.png",
     "CODE_000.png",
 ]
 
-OUTPUT_DIR = (
-    PROJECT_ROOT
-    / "results"
-    / "test_evaluation"
-    / "original_data_check"
-)
+OUTPUT_DIR = PROJECT_ROOT / "results" / "test_evaluation" / "original_data_check"
 TARGET_FILENAMES = [
     "CAWI_005.png",
     "CAWI_010.png",
     "CODE_000.png",
 ]
 
-OUTPUT_DIR = ROOT / "results" / "test_evaluation" / "original_data_check"
+OUTPUT_DIR = PROJECT_ROOT / "results" / "test_evaluation" / "original_data_check"
 
 
 def main():
@@ -57,14 +49,10 @@ def main():
 
             sample = selected[filename]
 
-            with Image.open(
-                archive.open(sample["image_path"])
-            ) as img:
+            with Image.open(archive.open(sample["image_path"])) as img:
                 image = np.array(img.convert("RGB"))
 
-            with Image.open(
-                archive.open(sample["mask_path"])
-            ) as msk:
+            with Image.open(archive.open(sample["mask_path"])) as msk:
                 mask_rgb = np.array(msk.convert("RGB"))
 
             mask = np.any(mask_rgb != 0, axis=2)
@@ -74,8 +62,7 @@ def main():
             print("Original image shape:", image.shape)
             print("Original mask shape:", mask_rgb.shape)
             print("Mask foreground pixels:", int(mask.sum()))
-            print("Unique mask RGB colors:",
-                  np.unique(mask_rgb.reshape(-1, 3), axis=0)[:10])
+            print("Unique mask RGB colors:", np.unique(mask_rgb.reshape(-1, 3), axis=0)[:10])
 
             fig, axes = plt.subplots(1, 3, figsize=(12, 4))
 

@@ -1,17 +1,14 @@
 import argparse
 from itertools import combinations
-from pathlib import Path
 
 import pandas as pd
 
+from src.utils.paths import PROJECT_ROOT, project_path
 
 EXPECTED_SEEDS = [42, 123, 2025, 7, 99]
 LABELS = ["Benign", "Malignant", "Normal"]
 TARGET_VAL = {"Benign": 26, "Malignant": 12, "Normal": 62}
 TARGET_TEST = {"Benign": 31, "Malignant": 14, "Normal": 61}
-
-
-from src.utils.paths import PROJECT_ROOT, project_path
 
 SPLIT_DIR = PROJECT_ROOT / "data" / "processed" / "paired_splits"
 REPORT_PATH = SPLIT_DIR / "independent_paired_split_audit.csv"
@@ -28,8 +25,7 @@ def validate_one_seed(seed, split_dir):
 
     if not patient_path.is_file() or not image_path.is_file():
         raise FileNotFoundError(
-            f"Missing paired split CSV for seed {seed}: "
-            f"{patient_path.name} / {image_path.name}"
+            f"Missing paired split CSV for seed {seed}: {patient_path.name} / {image_path.name}"
         )
 
     pl = pd.read_csv(patient_path)
@@ -39,35 +35,25 @@ def validate_one_seed(seed, split_dir):
     for name, frame in [("patient-level", pl), ("image-level", il)]:
         missing = required - set(frame.columns)
         if missing:
-            raise ValueError(
-                f"Seed {seed} {name} file missing columns: {sorted(missing)}"
-            )
+            raise ValueError(f"Seed {seed} {name} file missing columns: {sorted(missing)}")
         if frame[list(required)].isna().any().any():
             raise ValueError(f"Seed {seed} {name} file contains missing required values")
         if frame["filename"].duplicated().any():
             raise ValueError(f"Seed {seed} {name} file has duplicate filenames")
         unexpected = set(frame["split"].unique()) - {"train", "val", "test"}
         if unexpected:
-            raise ValueError(
-                f"Seed {seed} {name} file has unexpected split labels: {unexpected}"
-            )
+            raise ValueError(f"Seed {seed} {name} file has unexpected split labels: {unexpected}")
 
     paired_rows = ["filename", "patient_id", "label"]
     for split in ("val", "test"):
         left = (
-            pl.loc[pl["split"] == split, paired_rows]
-            .sort_values("filename")
-            .reset_index(drop=True)
+            pl.loc[pl["split"] == split, paired_rows].sort_values("filename").reset_index(drop=True)
         )
         right = (
-            il.loc[il["split"] == split, paired_rows]
-            .sort_values("filename")
-            .reset_index(drop=True)
+            il.loc[il["split"] == split, paired_rows].sort_values("filename").reset_index(drop=True)
         )
         if not left.equals(right):
-            raise AssertionError(
-                f"Seed {seed}: {split} rows differ between paired conditions"
-            )
+            raise AssertionError(f"Seed {seed}: {split} rows differ between paired conditions")
 
     # No filename may occur in more than one split within a condition.
     for name, frame in [("patient-level", pl), ("image-level", il)]:
@@ -77,9 +63,7 @@ def validate_one_seed(seed, split_dir):
         }
         for a, b in combinations(("train", "val", "test"), 2):
             if split_files[a] & split_files[b]:
-                raise AssertionError(
-                    f"Seed {seed} {name}: filename overlap between {a} and {b}"
-                )
+                raise AssertionError(f"Seed {seed} {name}: filename overlap between {a} and {b}")
 
     pl_train = pl[pl["split"] == "train"]
     il_train = il[il["split"] == "train"]
@@ -125,8 +109,12 @@ def validate_one_seed(seed, split_dir):
         "seed": seed,
         "patient_train_images": len(pl_train),
         "image_train_images": len(il_train),
-        "train_class_counts_patient": str(pl_train["label"].value_counts().reindex(LABELS, fill_value=0).to_dict()),
-        "train_class_counts_image": str(il_train["label"].value_counts().reindex(LABELS, fill_value=0).to_dict()),
+        "train_class_counts_patient": str(
+            pl_train["label"].value_counts().reindex(LABELS, fill_value=0).to_dict()
+        ),
+        "train_class_counts_image": str(
+            il_train["label"].value_counts().reindex(LABELS, fill_value=0).to_dict()
+        ),
         "val_images": counts["val_images"],
         "test_images": counts["test_images"],
         "val_patients": len(val_patients),
@@ -144,7 +132,8 @@ def parse_args():
         description="Independently audit the paired image-level and patient-level splits."
     )
     parser.add_argument(
-        "--split-dir", default=str(SPLIT_DIR),
+        "--split-dir",
+        default=str(SPLIT_DIR),
         help="Folder with the paired split CSVs and manifest; the audit report is written here.",
     )
     return parser.parse_args()
@@ -157,8 +146,7 @@ def main():
     report_path = split_dir / REPORT_PATH.name
     if not split_dir.is_dir():
         raise FileNotFoundError(
-            f"Paired split directory not found: {split_dir}. "
-            "Generate the paired splits first."
+            f"Paired split directory not found: {split_dir}. Generate the paired splits first."
         )
 
     if manifest_path.is_file():
@@ -167,9 +155,7 @@ def main():
             raise ValueError("Paired split manifest is missing the seed column")
         manifest_seeds = sorted(manifest["seed"].astype(int).tolist())
         if manifest_seeds != sorted(EXPECTED_SEEDS):
-            raise AssertionError(
-                f"Manifest seeds {manifest_seeds} do not match {EXPECTED_SEEDS}"
-            )
+            raise AssertionError(f"Manifest seeds {manifest_seeds} do not match {EXPECTED_SEEDS}")
 
     reports = [validate_one_seed(seed, split_dir) for seed in EXPECTED_SEEDS]
     report = pd.DataFrame(reports)
