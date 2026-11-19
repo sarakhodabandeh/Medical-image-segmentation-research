@@ -1,3 +1,10 @@
+"""Review the masks of a few hand-picked samples.
+
+Input: the dataset zip in data/raw/.
+Output: a matplotlib window showing, for each selected image, the original image, its mask and
+the mask overlaid on the image; no files are written.
+"""
+
 import csv
 import zipfile
 from io import BytesIO
@@ -62,13 +69,13 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
         ).astype(np.uint8)
 
         axes[i, 0].imshow(image)
-        axes[i, 0].set_title(f"{filename} — Original", fontsize=10)
+        axes[i, 0].set_title(f"{filename} - Original", fontsize=10)
 
         axes[i, 1].imshow(mask)
         axes[i, 1].set_title("Original mask", fontsize=10)
 
         axes[i, 2].imshow(overlay)
-        axes[i, 2].set_title(f"Overlay — {labels.get(filename, 'Unknown')}", fontsize=10)
+        axes[i, 2].set_title(f"Overlay - {labels.get(filename, 'Unknown')}", fontsize=10)
 
         for ax in axes[i]:
             ax.axis("off")

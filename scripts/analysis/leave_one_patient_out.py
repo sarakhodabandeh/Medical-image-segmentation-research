@@ -1,3 +1,11 @@
+"""Leave-one-patient-out analysis of the paired differences.
+
+Input: test_per_image_metrics.csv (--metrics-csv).
+Removes each patient in turn and recomputes the three aggregations.
+Outputs, written to --output-dir: leave_one_patient_out_all.csv and
+leave_one_patient_out_summary.csv.
+"""
+
 import argparse
 
 import pandas as pd

@@ -1,3 +1,11 @@
+"""Create the master metadata CSV data/processed/bus_uclm_patient_split.csv.
+
+Lists every image kept after quality control with its patient_id, label and the original fixed
+patient-level split (25 training, 6 validation and 6 test patients; the patient lists are
+hard-coded below).
+WARNING: this overwrites the master CSV; do not rerun it unless you intend to rebuild it.
+"""
+
 import csv
 from collections import Counter, defaultdict
 

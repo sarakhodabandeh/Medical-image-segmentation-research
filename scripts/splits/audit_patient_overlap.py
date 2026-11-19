@@ -1,3 +1,10 @@
+"""Count the patients shared between the evaluation sets of different split seeds.
+
+Input: test_per_image_metrics.csv (--metrics-csv).
+Output, written to --output-dir: patient_overlap_image.csv and patient_overlap_patient.csv with
+the pairwise overlap of patients across seeds.
+"""
+
 import argparse
 from itertools import combinations
 

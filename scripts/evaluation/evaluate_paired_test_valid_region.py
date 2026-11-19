@@ -1,3 +1,12 @@
+"""Re-evaluate the paired checkpoints inside the valid image region only.
+
+Same inputs and fixed 0.5 threshold as evaluate_paired_test.py, but the artificial padding that
+makes the images square is excluded from every metric, and predictions that fall inside the
+padding are reported separately.
+Outputs, written to --output-dir: test_per_image_metrics_valid_region.csv,
+test_summary_valid_region.csv and test_paired_comparison_valid_region.csv.
+"""
+
 import argparse
 from pathlib import Path
 

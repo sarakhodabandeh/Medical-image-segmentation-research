@@ -1,3 +1,12 @@
+"""Independently audit the five paired image-level / patient-level splits.
+
+Reads the split CSVs and the manifest in --split-dir and checks that the validation and test
+images are identical within each pair, that the validation and test class counts equal the fixed
+targets, that the training sets match in size and class counts, and that no held-out patient
+appears in a patient-level training set. Writes independent_paired_split_audit.csv to the same
+folder.
+"""
+
 import argparse
 from itertools import combinations
 

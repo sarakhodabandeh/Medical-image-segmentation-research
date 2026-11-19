@@ -3,9 +3,7 @@ import pandas as pd
 
 from src.utils.paths import PROJECT_ROOT
 
-# --------------------------------------------------
 # Configuration
-# --------------------------------------------------
 
 INPUT = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
 
@@ -16,9 +14,7 @@ SEEDS = [42, 123, 2025, 7, 99]
 SPLITS = ["train", "val", "test"]
 
 
-# --------------------------------------------------
 # Load patient-level reference split
-# --------------------------------------------------
 def main():
     df = pd.read_csv(INPUT)
 
@@ -42,9 +38,7 @@ def main():
 
     all_summaries = []
 
-    # --------------------------------------------------
     # Generate image-level splits
-    # --------------------------------------------------
 
     for seed in SEEDS:
         rng = np.random.default_rng(seed)
@@ -96,9 +90,7 @@ def main():
             ["split", "filename"]
         )
 
-        # --------------------------------------------------
         # Validation
-        # --------------------------------------------------
 
         if len(result) != len(df):
             raise ValueError("Total image count changed.")
@@ -117,9 +109,7 @@ def main():
         output_path = OUTPUT_DIR / f"image_level_seed_{seed}.csv"
         result.to_csv(output_path, index=False)
 
-        # --------------------------------------------------
         # Patient overlap analysis
-        # --------------------------------------------------
 
         patient_sets = {
             split: set(result.loc[result["split"] == split, "patient_id"]) for split in SPLITS
@@ -159,9 +149,7 @@ def main():
             f"val-test={overlap_vt}"
         )
 
-    # --------------------------------------------------
     # Save summary
-    # --------------------------------------------------
 
     summary_df = pd.DataFrame(all_summaries)
     summary_path = OUTPUT_DIR / "image_split_summary.csv"

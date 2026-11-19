@@ -1,3 +1,9 @@
+"""Analyse the segmentation masks of the BUS-UCLM dataset.
+
+Input: the dataset zip in data/raw/ (INFO.csv, images and masks are read directly from the zip).
+Output: a summary of the masks printed to the screen; no files are written.
+"""
+
 import csv
 import zipfile
 from collections import Counter

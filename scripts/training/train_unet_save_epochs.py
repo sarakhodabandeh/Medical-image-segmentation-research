@@ -1,3 +1,10 @@
+"""Train a U-Net like train_unet.py and also save a checkpoint after every epoch.
+
+Inputs are the same as for train_unet.py. In addition to best_model.pt and training_log.csv, the
+per-epoch checkpoints (epoch_001.pt, epoch_002.pt, ...) are written to
+<output-dir>/epoch_checkpoints/. Used for the epoch diagnostics, not for the paper results.
+"""
+
 import argparse
 import csv
 import random

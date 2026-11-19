@@ -47,7 +47,7 @@ def main():
             print("Mask colors:", np.unique(mask.reshape(-1, 3), axis=0)[:10])
 
             if image.shape[:2] != mask.shape[:2]:
-                print("DIMENSION MISMATCH — not overlaying this sample.")
+                print("DIMENSION MISMATCH - not overlaying this sample.")
                 continue
 
             fig, axes = plt.subplots(1, 3, figsize=(15, 5))

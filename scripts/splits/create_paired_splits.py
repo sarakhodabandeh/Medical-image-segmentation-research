@@ -1,3 +1,12 @@
+"""Create and validate five paired image-level / patient-level splits.
+
+Inputs: the master metadata CSV (--master) and the ranked candidate cohorts (--candidates).
+Outputs, written to --output-dir: patient_level_seed_{seed}.csv, image_level_seed_{seed}.csv,
+paired_split_manifest.csv and paired_split_validation_report.csv.
+WARNING: this overwrites existing split files. The splits used in the paper are already
+committed; do not rerun this script unless you intend to replace them.
+"""
+
 import argparse
 import itertools
 from pathlib import Path

@@ -145,9 +145,7 @@ def main():
     if not lesion_background_probs:
         raise RuntimeError("No lesion-background pixels were found in validation.")
 
-    # ---------------------------------------------------------
     # 1. Three-group probability histogram
-    # ---------------------------------------------------------
     normal_values = torch.cat(normal_probs).numpy()
     lesion_values = torch.cat(lesion_probs).numpy()
     background_values = torch.cat(lesion_background_probs).numpy()
@@ -198,9 +196,7 @@ def main():
     plt.savefig(histogram_path, dpi=150)
     plt.close()
 
-    # ---------------------------------------------------------
     # 2. Example images, masks, probabilities, and predictions
-    # ---------------------------------------------------------
     for label, samples in examples.items():
         if not samples:
             continue
@@ -275,9 +271,7 @@ def main():
         fig.savefig(example_path, dpi=150)
         plt.close(fig)
 
-    # ---------------------------------------------------------
     # 3. Print probability distribution summaries
-    # ---------------------------------------------------------
     def print_distribution(name, values):
         tensor = torch.as_tensor(values, dtype=torch.float32)
 

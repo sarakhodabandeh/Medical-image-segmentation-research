@@ -1,3 +1,9 @@
+"""Inspect the BUS-UCLM dataset: labels, images and masks.
+
+Input: the dataset zip in data/raw/ (read directly, not extracted).
+Output: a summary printed to the screen; no files are written.
+"""
+
 import csv
 import zipfile
 from collections import Counter

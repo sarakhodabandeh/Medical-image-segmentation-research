@@ -1,3 +1,10 @@
+"""Summarise the metadata (INFO.csv) of the BUS-UCLM dataset.
+
+Input: the dataset zip in data/raw/.
+Output, printed to the screen: the number of patients, the total number of images, and the images
+and labels of each patient.
+"""
+
 import csv
 import zipfile
 from collections import Counter, defaultdict

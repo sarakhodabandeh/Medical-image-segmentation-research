@@ -1,3 +1,10 @@
+"""Summarise how many images each patient contributes.
+
+Input: data/processed/bus_uclm_patient_split.csv (the master metadata).
+Output, printed to the screen: images per patient, summary statistics, and the number of patients
+for each image count.
+"""
+
 import pandas as pd
 
 from src.utils.paths import PROJECT_ROOT

@@ -1,3 +1,10 @@
+"""Show the 13 images whose image and mask sizes do not match.
+
+These HESN_000 ... HESN_012 pairs are excluded from the analysis.
+Input: the dataset zip in data/raw/.
+Output: a matplotlib window with each image next to its mask; no files are written.
+"""
+
 import zipfile
 from io import BytesIO
 

@@ -1,3 +1,12 @@
+"""Qualitative comparison of the image-level and patient-level models.
+
+For the hand-picked test images listed in SAMPLES, shows the predictions of the image-level and the
+patient-level model of the matching seed next to the ground truth.
+Inputs: the paired split CSVs (--splits-dir) and the checkpoints
+results/paired_full_{image|patient}_{seed}/best_model.pt (--results-dir).
+Output: the comparison images, written to --output-dir.
+"""
+
 import argparse
 from pathlib import Path
 

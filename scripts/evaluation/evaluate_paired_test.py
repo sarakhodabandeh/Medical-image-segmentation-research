@@ -1,3 +1,12 @@
+"""Evaluate the paired U-Net checkpoints on the held-out test sets (full 256 x 256 canvas).
+
+Inputs: the paired split CSVs (--splits-dir) and the checkpoints
+results/paired_full_{image|patient}_{seed}/best_model.pt (--results-dir).
+Outputs, written to --output-dir: test_per_image_metrics.csv, test_summary_by_run.csv and
+test_paired_comparison.csv. The prediction threshold is fixed at 0.5; nothing is tuned on the
+test set.
+"""
+
 import argparse
 from pathlib import Path
 

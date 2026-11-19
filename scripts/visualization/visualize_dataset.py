@@ -1,3 +1,9 @@
+"""Show randomly chosen dataset images together with their binary masks.
+
+Input: the dataset zip in data/raw/.
+Output: a matplotlib window; no files are written.
+"""
+
 import csv
 import random
 import zipfile
@@ -65,10 +71,10 @@ def main():
             )
 
             axes[row_index, 0].imshow(image)
-            axes[row_index, 0].set_title(f"{row['Label']} — Original")
+            axes[row_index, 0].set_title(f"{row['Label']} - Original")
 
             axes[row_index, 1].imshow(mask, cmap="gray", vmin=0, vmax=1)
-            axes[row_index, 1].set_title(f"Binary mask — {int(mask.sum())} foreground pixels")
+            axes[row_index, 1].set_title(f"Binary mask - {int(mask.sum())} foreground pixels")
 
             axes[row_index, 2].imshow(overlay)
             axes[row_index, 2].set_title("Mask overlay")

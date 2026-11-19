@@ -1,3 +1,11 @@
+"""Validate the BUS-UCLM dataset zip.
+
+Checks that the entries of INFO.csv have an image and a mask in the zip and compares the image
+and mask sizes.
+Input: the dataset zip in data/raw/.
+Output: a summary printed to the screen; no files are written.
+"""
+
 import csv
 import zipfile
 from collections import Counter

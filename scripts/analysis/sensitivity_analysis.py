@@ -1,3 +1,10 @@
+"""Aggregation sensitivity of the paired (patient-level minus image-level) differences.
+
+Input: test_per_image_metrics.csv (--metrics-csv).
+Averages the differences with equal weight per seed, per patient and per unique image.
+Output, written to --output-dir: aggregation_sensitivity.csv.
+"""
+
 import argparse
 
 import pandas as pd

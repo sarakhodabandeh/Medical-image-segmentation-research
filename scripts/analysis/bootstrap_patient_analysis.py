@@ -1,11 +1,18 @@
+"""Patient-level cluster bootstrap of the paired differences.
+
+Input: test_per_image_metrics.csv (--metrics-csv).
+Resamples unique patients with replacement (default 10,000 replicates, random seed 20261102) and
+reports percentile 95% confidence intervals.
+Outputs, written to --output-dir: patient_seed_metrics.csv, patient_aggregated_metrics.csv and
+cluster_bootstrap_summary.csv.
+"""
+
 import argparse
 
 import numpy as np
 import pandas as pd
 
-# --------------------------------------------------
 # Configuration
-# --------------------------------------------------
 from src.utils.paths import PROJECT_ROOT, project_path
 
 INPUT = PROJECT_ROOT / "results" / "test_evaluation" / "test_per_image_metrics.csv"
@@ -49,9 +56,7 @@ def main():
     output_dir = project_path(args.output_dir)
     n_bootstrap = args.n_bootstrap
     random_seed = args.random_seed
-    # --------------------------------------------------
     # Load data
-    # --------------------------------------------------
 
     df = pd.read_csv(input_path)
 
@@ -70,9 +75,7 @@ def main():
     if missing:
         raise ValueError(f"Missing columns: {sorted(missing)}")
 
-    # --------------------------------------------------
     # Calculate paired metrics for each patient and seed
-    # --------------------------------------------------
 
     rows = []
 
@@ -117,9 +120,7 @@ def main():
 
     patient_seed = pd.DataFrame(rows)
 
-    # --------------------------------------------------
     # Aggregate repeated observations within each patient
-    # --------------------------------------------------
 
     metrics = [
         "lesion_dice",
@@ -148,9 +149,7 @@ def main():
 
     patient_summary = pd.DataFrame(patient_rows)
 
-    # --------------------------------------------------
     # Cluster bootstrap: resample unique patients
-    # --------------------------------------------------
 
     rng = np.random.default_rng(random_seed)
 
@@ -188,9 +187,7 @@ def main():
             "bootstrap_probability_difference_positive": (bootstrap_means > 0).mean(),
         }
 
-    # --------------------------------------------------
     # Save outputs
-    # --------------------------------------------------
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -201,9 +198,7 @@ def main():
     bootstrap_df = pd.DataFrame(bootstrap_results).T
     bootstrap_df.to_csv(output_dir / "cluster_bootstrap_summary.csv")
 
-    # --------------------------------------------------
     # Print report
-    # --------------------------------------------------
 
     print("\nUnique patients:", n_patients)
     print("Patient-seed observations:", len(patient_seed))

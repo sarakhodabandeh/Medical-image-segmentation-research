@@ -1,3 +1,10 @@
+"""Search candidate paired patient-held-out validation/test cohorts.
+
+Input: the master metadata CSV (--input).
+Draws random patient assignments (--trials), keeps the valid ones and writes the best --top to
+top_paired_split_candidates.csv in --output-dir.
+"""
+
 import argparse
 from pathlib import Path
 

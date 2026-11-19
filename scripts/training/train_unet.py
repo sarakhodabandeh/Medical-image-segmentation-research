@@ -1,3 +1,11 @@
+"""Train a U-Net on one BUS-UCLM split CSV.
+
+Inputs: a split CSV with train and val partitions (--split-csv) and the YAML config (--config).
+Outputs, written to --output-dir: best_model.pt, the checkpoint with the highest validation
+lesion macro-Dice at threshold 0.5, and training_log.csv with the per-epoch losses and
+validation metrics.
+"""
+
 import argparse
 import csv
 import random
