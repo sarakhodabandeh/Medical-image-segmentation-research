@@ -2,6 +2,7 @@
 
 ![tests](https://github.com/sarakhodabandeh/Medical-image-segmentation-research/actions/workflows/tests.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 Code for the paired study *Effect of Patient-Level versus Image-Level Data Splitting on Breast
 Ultrasound Lesion Segmentation and Normal-Image False Positives: A Paired Evaluation on the BUS-UCLM
@@ -146,6 +147,8 @@ Medical-image-segmentation-research/
 ├── run_paper.py                    runs the whole pipeline
 ├── pyproject.toml, requirements.txt, requirements-dev.txt, .pre-commit-config.yaml
 ├── CHANGELOG.md
+├── CITATION.cff                    how to cite this repository
+├── LICENSE                         MIT License
 └── README.md
 ```
 
@@ -172,8 +175,8 @@ The same checks run on every push through GitHub Actions.
 
 ## Data and citation
 
-Raw data are not redistributed. If you use this code, please cite the manuscript once available and
-the dataset paper:
+Raw data are not redistributed. If you use this code, please cite the manuscript once available (GitHub also shows a "Cite this
+repository" button, generated from `CITATION.cff`) and the dataset paper:
 
 > Vallez N, Bueno G, Deniz O, et al. BUS-UCLM: Breast ultrasound lesion segmentation dataset.
 > *Scientific Data*. 2025;12:242. https://doi.org/10.1038/s41597-025-04562-3
@@ -183,5 +186,6 @@ image segmentation. MICCAI 2015. https://doi.org/10.1007/978-3-319-24574-4_28
 
 ## License
 
-No license has been chosen yet, so all rights are reserved until one is added. The BUS-UCLM dataset
-has its own license and terms of use.
+The code is released under the MIT License (see [`LICENSE`](LICENSE)). The BUS-UCLM dataset is not
+included in this repository and has its own license and terms of use; the MIT License does not
+cover it.

@@ -17,6 +17,7 @@ after the refactoring and reproduced the committed result files exactly.
 - GitHub Actions workflow (ruff and pytest), ruff configuration, pre-commit hook, pinned
   `requirements.txt`, `requirements-dev.txt`, `.gitattributes`, `data/README.md`.
 - Module docstrings for all paper scripts.
+- MIT `LICENSE` and `CITATION.cff`.
 
 ### Changed
 - Split generators now write inside the repository (they previously wrote two folders above it).

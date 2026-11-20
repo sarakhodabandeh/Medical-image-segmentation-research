@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "Patient-level vs image-level data splitting in breast ultrasound lesion segmentation"
+authors:
+  - family-names: "Khodabandeh Yalabadi"
+    given-names: "Sara"
+repository-code: "https://github.com/sarakhodabandeh/Medical-image-segmentation-research"
+license: MIT
+abstract: >-
+  Code for a paired evaluation of image-level and patient-level data splitting for breast
+  ultrasound lesion segmentation and false-positive predictions on normal images, using a
+  U-Net and the BUS-UCLM dataset.
+keywords:
+  - breast ultrasound
+  - medical image segmentation
+  - U-Net
+  - data leakage
+  - patient-level data splitting
