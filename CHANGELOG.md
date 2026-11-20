@@ -4,7 +4,7 @@ All notable changes to this repository are listed here. The experiments and resu
 manuscript were not changed by any of these edits: the evaluation and statistics scripts were rerun
 after the refactoring and reproduced the committed result files exactly.
 
-## [Unreleased]
+## [1.0.0] - 2026-11-20
 
 ### Added
 - `pyproject.toml` so the project installs with `pip install -e .`; one shared `PROJECT_ROOT` in
