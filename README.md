@@ -134,7 +134,7 @@ Medical-image-segmentation-research/
 ├── scripts/
 │   ├── data_audit/                 dataset inspection and validation
 │   ├── splits/                     split search, creation, validation and audit
-│   ├── training/                   train_unet.py (and a variant that saves every epoch)
+│   ├── training/                   train_unet.py (--save-every-epoch keeps a checkpoint per epoch)
 │   ├── evaluation/                 full-canvas and valid-region evaluation
 │   ├── analysis/                   sensitivity, bootstrap and leave-one-patient-out
 │   ├── visualization/              dataset samples, predictions and Figure 1
