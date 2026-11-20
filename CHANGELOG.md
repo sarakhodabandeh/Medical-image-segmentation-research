@@ -25,6 +25,7 @@ after the refactoring and reproduced the committed result files exactly.
   folders are no longer tracked by git.
 - Code formatted with ruff; em dashes and banner comments removed.
 - README rewritten to describe the repository as it is.
+- `train_unet_save_epochs.py` merged into `train_unet.py` as the `--save-every-epoch` option.
 
 ### Removed
 - Superseded scripts (`create_paired_splits_hardened.py`, `evaluate_test.py`,

@@ -3,7 +3,8 @@
 Inputs: a split CSV with train and val partitions (--split-csv) and the YAML config (--config).
 Outputs, written to --output-dir: best_model.pt, the checkpoint with the highest validation
 lesion macro-Dice at threshold 0.5, and training_log.csv with the per-epoch losses and
-validation metrics.
+validation metrics. With --save-every-epoch, a diagnostic checkpoint is also written
+after every epoch to <output-dir>/epoch_checkpoints/.
 """
 
 import argparse
@@ -133,6 +134,12 @@ def main():
     )
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--padding", choices=["replicate", "constant"], default="replicate")
+    parser.add_argument(
+        "--save-every-epoch",
+        action="store_true",
+        help="Also save a diagnostic checkpoint after every epoch "
+        "(output-dir/epoch_checkpoints/epoch_NNN.pt).",
+    )
     args = parser.parse_args()
 
     config_path = resolve_project_path(args.config)
@@ -209,6 +216,10 @@ def main():
     checkpoint_path = output_dir / "best_model.pt"
     if checkpoint_path.exists():
         raise FileExistsError(f"{checkpoint_path} already exists. Choose a new --output-dir.")
+
+    epoch_checkpoint_dir = output_dir / "epoch_checkpoints"
+    if args.save_every_epoch:
+        epoch_checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     best_val_dice = -1.0
     best_val_normal_fp = None
@@ -299,6 +310,32 @@ def main():
                 }
             )
             file.flush()
+
+            if args.save_every_epoch:
+                # Diagnostic checkpoint after every epoch. It does not change training or the
+                # best-checkpoint rule below.
+                epoch_path = epoch_checkpoint_dir / f"epoch_{epoch:03d}.pt"
+                torch.save(
+                    {
+                        "model_state_dict": model.state_dict(),
+                        "epoch": epoch,
+                        "train_loss": train_loss,
+                        "val_loss": metrics["loss"],
+                        "val_lesion_dice_at_0_5": metrics["lesion_dice"],
+                        "val_normal_false_positive_rate_at_0_5": metrics[
+                            "normal_false_positive_rate"
+                        ],
+                        "val_lesion_images": metrics["lesion_images"],
+                        "val_normal_images": metrics["normal_images"],
+                        "config": config,
+                        "seed": seed,
+                        "split_csv": str(split_csv_path),
+                        "padding_mode": padding_mode,
+                        "checkpoint_type": "epoch_diagnostic",
+                    },
+                    epoch_path,
+                )
+                print(f"  Saved epoch checkpoint: {epoch_path.name}")
 
             # Predefined primary selection rule: maximize validation lesion
             # macro-Dice at fixed threshold 0.5. FP rate is a secondary outcome.
