@@ -39,7 +39,6 @@ results/**/*.png
 # Jupyter checkpoints
 .ipynb_checkpoints/
 
-docs/project_structure.txt
 
 
 *.egg-info/
