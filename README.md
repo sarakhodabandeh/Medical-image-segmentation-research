@@ -3,6 +3,7 @@
 ![tests](https://github.com/sarakhodabandeh/Medical-image-segmentation-research/actions/workflows/tests.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24394781.svg)](https://doi.org/10.5281/zenodo.24394781)
 
 Code for the paired study *Effect of Patient-Level versus Image-Level Data Splitting on Breast
 Ultrasound Lesion Segmentation and Normal-Image False Positives: A Paired Evaluation on the BUS-UCLM
@@ -174,6 +175,8 @@ The same checks run on every push through GitHub Actions.
 - One dataset and one architecture were studied. See the manuscript for the full discussion.
 
 ## Data and citation
+
+Archived code (all versions): https://doi.org/10.5281/zenodo.24394781
 
 Raw data are not redistributed. If you use this code, please cite the manuscript once available (GitHub also shows a "Cite this
 repository" button, generated from `CITATION.cff`) and the dataset paper:
