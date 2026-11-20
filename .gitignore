@@ -39,5 +39,27 @@ results/**/*.png
 # Jupyter checkpoints
 .ipynb_checkpoints/
 
-docs/project_structure.txt
 
+
+*.egg-info/
+
+# Side experiments (kept locally, not part of the paper pipeline)
+results/attention_unet_*/
+results/unet_*/
+results/smoke_test_*/
+results/paired_smoke_*/
+results/batch_size_comparison_seed99/
+results/norm_comparison_seed99/
+results/visual_comparison_pw5_fp30/
+results/bn_mode_diagnostic/
+results/bn_recalibration/
+results/diagnostic_patient_99/
+results/false_positive_components/
+results/false_positive_visualization/
+results/probability_analysis/
+results/test_visualizations/
+
+results/checkpoint_threshold_comparison.csv
+results/padding_comparison.csv
+
+.ruff_cache/

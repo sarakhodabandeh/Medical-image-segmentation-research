@@ -1,0 +1,11 @@
+split_type,seed_a,seed_b,patients_a,patients_b,shared_patients,shared_patient_ids
+patient,7,42,6,6,2,COPE;DAPA
+patient,7,99,6,6,2,LOTI;TOCI
+patient,7,123,6,6,0,
+patient,7,2025,6,6,1,DAPA
+patient,42,99,6,6,1,ORPE
+patient,42,123,6,6,0,
+patient,42,2025,6,6,1,DAPA
+patient,99,123,6,6,1,MENE
+patient,99,2025,6,6,0,
+patient,123,2025,6,6,2,CHVI;STSP

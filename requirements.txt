@@ -1,10 +1,14 @@
+# torch and torchvision are deliberately not pinned here: the correct build depends on your
+# operating system and CUDA version. Tested with torch 2.11.0+cu128 and torchvision 0.26.0+cu128
+# (install them first, see "Environment setup" in the README).
 torch
 torchvision
-numpy
-pandas
-Pillow
-matplotlib
-scikit-learn
-scipy
-tqdm
-PyYAML
+
+# Versions used for the paper experiments
+numpy==2.5.2
+pandas==3.1.0
+Pillow==12.3.0
+matplotlib==3.11.2
+scikit-learn==1.9.1
+scipy==1.18.1
+PyYAML==6.0.3

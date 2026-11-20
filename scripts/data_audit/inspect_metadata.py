@@ -1,45 +1,27 @@
+"""Summarise the metadata (INFO.csv) of the BUS-UCLM dataset.
 
-import zipfile
+Input: the dataset zip in data/raw/.
+Output, printed to the screen: the number of patients, the total number of images, and the images
+and labels of each patient.
+"""
+
 import csv
-from pathlib import Path
-from collections import defaultdict, Counter
+import zipfile
+from collections import Counter, defaultdict
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError("Could not locate project root.")
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 ZIP_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
+    PROJECT_ROOT / "data" / "raw" / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
 )
 
-ROOT = (
-    "BUS-UCLM Breast ultrasound lesion segmentation dataset/"
-    "BUS-UCLM"
-)
+ROOT = "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
 
 patients = defaultdict(list)
 
 with zipfile.ZipFile(ZIP_PATH, "r") as archive:
     with archive.open(f"{ROOT}/INFO.csv") as file:
-        rows = csv.DictReader(
-            (line.decode("utf-8-sig") for line in file),
-            delimiter=";"
-        )
+        rows = csv.DictReader((line.decode("utf-8-sig") for line in file), delimiter=";")
 
         for row in rows:
             filename = row["Image"]

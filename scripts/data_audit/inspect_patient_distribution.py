@@ -1,21 +1,13 @@
+"""Summarise how many images each patient contributes.
+
+Input: data/processed/bus_uclm_patient_split.csv (the master metadata).
+Output, printed to the screen: images per patient, summary statistics, and the number of patients
+for each image count.
+"""
+
 import pandas as pd
-from pathlib import Path
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError("Could not locate project root.")
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 path = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
 df = pd.read_csv(path)
@@ -37,9 +29,4 @@ print("\nSummary statistics:")
 print(patient_summary["n_images"].describe())
 
 print("\nNumber of patients by image count:")
-print(
-    patient_summary["n_images"]
-    .value_counts()
-    .sort_index()
-    .to_string()
-)
+print(patient_summary["n_images"].value_counts().sort_index().to_string())

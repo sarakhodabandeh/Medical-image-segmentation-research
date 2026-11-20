@@ -1,3 +1,12 @@
+"""Create and validate five paired image-level / patient-level splits.
+
+Inputs: the master metadata CSV (--master) and the ranked candidate cohorts (--candidates).
+Outputs, written to --output-dir: patient_level_seed_{seed}.csv, image_level_seed_{seed}.csv,
+paired_split_manifest.csv and paired_split_validation_report.csv.
+WARNING: this overwrites existing split files. The splits used in the paper are already
+committed; do not rerun this script unless you intend to replace them.
+"""
+
 import argparse
 import itertools
 from pathlib import Path
@@ -5,33 +14,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
-
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 DEFAULT_MASTER = "data/processed/bus_uclm_patient_split.csv"
-DEFAULT_CANDIDATES = (
-    "data/processed/paired_split_candidates/top_paired_split_candidates.csv"
-)
+DEFAULT_CANDIDATES = "data/processed/paired_split_candidates/top_paired_split_candidates.csv"
 
-OUTPUT_DIR = "../../data/processed/paired_splits"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "paired_splits"
 LABELS = ["Benign", "Malignant", "Normal"]
 TARGET_VAL = {"Benign": 26, "Malignant": 12, "Normal": 62}
 TARGET_TEST = {"Benign": 31, "Malignant": 14, "Normal": 61}
@@ -47,8 +35,9 @@ def parse_patient_list(value):
     return [item for item in str(value).split(";") if item]
 
 
-def exact_sample_with_patient_coverage(pool, n, target_counts, required_patients,
-                                       rng, max_attempts=20000):
+def exact_sample_with_patient_coverage(
+    pool, n, target_counts, required_patients, rng, max_attempts=20000
+):
     """
     Select exact class counts while ensuring:
       - every assigned patient has >=1 selected image;
@@ -56,8 +45,7 @@ def exact_sample_with_patient_coverage(pool, n, target_counts, required_patients
     """
     required_patients = list(required_patients)
     grouped = {
-        pid: pool[pool["patient_id"] == pid].reset_index(drop=True)
-        for pid in required_patients
+        pid: pool[pool["patient_id"] == pid].reset_index(drop=True) for pid in required_patients
     }
 
     if any(len(grouped[pid]) < 2 for pid in required_patients):
@@ -132,15 +120,11 @@ def build_candidate(master, candidate, rng):
     val_pool = master[master["patient_id"].isin(val_patients)]
     test_pool = master[master["patient_id"].isin(test_patients)]
 
-    val_rows = exact_sample_with_patient_coverage(
-        val_pool, 100, TARGET_VAL, val_patients, rng
-    )
+    val_rows = exact_sample_with_patient_coverage(val_pool, 100, TARGET_VAL, val_patients, rng)
     if val_rows is None:
         return None, "could not construct exact validation sample"
 
-    test_rows = exact_sample_with_patient_coverage(
-        test_pool, 106, TARGET_TEST, test_patients, rng
-    )
+    test_rows = exact_sample_with_patient_coverage(test_pool, 106, TARGET_TEST, test_patients, rng)
     if test_rows is None:
         return None, "could not construct exact test sample"
 
@@ -150,8 +134,7 @@ def build_candidate(master, candidate, rng):
 
     patient_train = master[~master["patient_id"].isin(heldout_patients)].copy()
     leakage_pool = master[
-        master["patient_id"].isin(heldout_patients)
-        & ~master["filename"].isin(eval_filenames)
+        master["patient_id"].isin(heldout_patients) & ~master["filename"].isin(eval_filenames)
     ].copy()
 
     leakage_by_patient = leakage_pool.groupby("patient_id").size()
@@ -166,14 +149,10 @@ def build_candidate(master, candidate, rng):
     # two training sets have exactly the same size and class distribution.
     image_train_parts = [leakage_pool]
     for label in LABELS:
-        needed = (
-            patient_train_counts.get(label, 0)
-            - leakage_counts.get(label, 0)
-        )
+        needed = patient_train_counts.get(label, 0) - leakage_counts.get(label, 0)
         if needed < 0:
             return None, (
-                f"leakage pool has more {label} images than patient-level "
-                "training can match"
+                f"leakage pool has more {label} images than patient-level training can match"
             )
 
         available = patient_train[patient_train["label"] == label]
@@ -204,12 +183,8 @@ def build_candidate(master, candidate, rng):
     )
 
     columns = ["filename", "patient_id", "label", "split"]
-    patient_level = patient_level[columns].sort_values(
-        ["split", "filename"]
-    ).reset_index(drop=True)
-    image_level = image_level[columns].sort_values(
-        ["split", "filename"]
-    ).reset_index(drop=True)
+    patient_level = patient_level[columns].sort_values(["split", "filename"]).reset_index(drop=True)
+    image_level = image_level[columns].sort_values(["split", "filename"]).reset_index(drop=True)
 
     return {
         "patient_level": patient_level,
@@ -301,11 +276,16 @@ def main():
     parser.add_argument("--candidate-pool", type=int, default=20)
     parser.add_argument("--seed", type=int, default=20261030)
     parser.add_argument("--overlap-penalty", type=float, default=0.01)
+    parser.add_argument(
+        "--output-dir",
+        default=str(OUTPUT_DIR),
+        help="Folder for the generated split CSVs and reports.",
+    )
     args = parser.parse_args()
 
     master_path = project_path(args.master)
     candidates_path = project_path(args.candidates)
-    output_dir = project_path(OUTPUT_DIR)
+    output_dir = project_path(args.output_dir)
 
     if not master_path.exists():
         raise FileNotFoundError(master_path)
@@ -373,40 +353,44 @@ def main():
         heldout = set(pair["val_patients"]) | set(pair["test_patients"])
         leakage_patients = set(il_train["patient_id"]) & heldout
 
-        reports.append({
-            "seed": seed,
-            "candidate_trial": pair["candidate_trial"],
-            "candidate_score": pair["candidate_score"],
-            "train_images_both": len(pl_train),
-            "train_Benign_both": int((pl_train["label"] == "Benign").sum()),
-            "train_Malignant_both": int((pl_train["label"] == "Malignant").sum()),
-            "train_Normal_both": int((pl_train["label"] == "Normal").sum()),
-            "val_images_both": len(val),
-            "val_Benign": int((val["label"] == "Benign").sum()),
-            "val_Malignant": int((val["label"] == "Malignant").sum()),
-            "val_Normal": int((val["label"] == "Normal").sum()),
-            "test_images_both": len(test),
-            "test_Benign": int((test["label"] == "Benign").sum()),
-            "test_Malignant": int((test["label"] == "Malignant").sum()),
-            "test_Normal": int((test["label"] == "Normal").sum()),
-            "patient_level_train_patients": pl_train["patient_id"].nunique(),
-            "image_level_train_patients": il_train["patient_id"].nunique(),
-            "image_level_leakage_patients": len(leakage_patients),
-            "image_level_leakage_images": len(pair["leakage_pool"]),
-            "val_patients": ";".join(pair["val_patients"]),
-            "test_patients": ";".join(pair["test_patients"]),
-            "patient_level_csv": str(pl_path.relative_to(PROJECT_ROOT)),
-            "image_level_csv": str(il_path.relative_to(PROJECT_ROOT)),
-        })
+        reports.append(
+            {
+                "seed": seed,
+                "candidate_trial": pair["candidate_trial"],
+                "candidate_score": pair["candidate_score"],
+                "train_images_both": len(pl_train),
+                "train_Benign_both": int((pl_train["label"] == "Benign").sum()),
+                "train_Malignant_both": int((pl_train["label"] == "Malignant").sum()),
+                "train_Normal_both": int((pl_train["label"] == "Normal").sum()),
+                "val_images_both": len(val),
+                "val_Benign": int((val["label"] == "Benign").sum()),
+                "val_Malignant": int((val["label"] == "Malignant").sum()),
+                "val_Normal": int((val["label"] == "Normal").sum()),
+                "test_images_both": len(test),
+                "test_Benign": int((test["label"] == "Benign").sum()),
+                "test_Malignant": int((test["label"] == "Malignant").sum()),
+                "test_Normal": int((test["label"] == "Normal").sum()),
+                "patient_level_train_patients": pl_train["patient_id"].nunique(),
+                "image_level_train_patients": il_train["patient_id"].nunique(),
+                "image_level_leakage_patients": len(leakage_patients),
+                "image_level_leakage_images": len(pair["leakage_pool"]),
+                "val_patients": ";".join(pair["val_patients"]),
+                "test_patients": ";".join(pair["test_patients"]),
+                "patient_level_csv": str(pl_path.relative_to(PROJECT_ROOT)),
+                "image_level_csv": str(il_path.relative_to(PROJECT_ROOT)),
+            }
+        )
 
-        manifest.append({
-            "seed": seed,
-            "candidate_trial": pair["candidate_trial"],
-            "candidate_score": pair["candidate_score"],
-            "val_patients": ";".join(pair["val_patients"]),
-            "test_patients": ";".join(pair["test_patients"]),
-            "paired_selection_objective": objective,
-        })
+        manifest.append(
+            {
+                "seed": seed,
+                "candidate_trial": pair["candidate_trial"],
+                "candidate_score": pair["candidate_score"],
+                "val_patients": ";".join(pair["val_patients"]),
+                "test_patients": ";".join(pair["test_patients"]),
+                "paired_selection_objective": objective,
+            }
+        )
 
     report_path = output_dir / "paired_split_validation_report.csv"
     manifest_path = output_dir / "paired_split_manifest.csv"

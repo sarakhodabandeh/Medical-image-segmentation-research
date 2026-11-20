@@ -1,55 +1,38 @@
+"""Inspect the BUS-UCLM dataset: labels, images and masks.
 
-import zipfile
+Input: the dataset zip in data/raw/ (read directly, not extracted).
+Output: a summary printed to the screen; no files are written.
+"""
+
 import csv
-from pathlib import Path
-from io import BytesIO
+import zipfile
 from collections import Counter
+from io import BytesIO
 
 import numpy as np
 from PIL import Image
 from scipy import ndimage
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError("Could not locate project root.")
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 ZIP_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
+    PROJECT_ROOT / "data" / "raw" / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
 )
 
-ROOT = (
-    "BUS-UCLM Breast ultrasound lesion segmentation dataset/"
-    "BUS-UCLM"
-)
+ROOT = "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
 
 if not ZIP_PATH.exists():
     raise FileNotFoundError(f"ZIP not found: {ZIP_PATH.resolve()}")
+
 
 def read_mask(archive, path):
     with Image.open(BytesIO(archive.read(path))) as image:
         return np.array(image.convert("L")) > 0
 
+
 with zipfile.ZipFile(ZIP_PATH, "r") as archive:
     with archive.open(f"{ROOT}/INFO.csv") as file:
-        rows = list(csv.DictReader(
-            (line.decode("utf-8-sig") for line in file),
-            delimiter=";"
-        ))
+        rows = list(csv.DictReader((line.decode("utf-8-sig") for line in file), delimiter=";"))
 
     summary = Counter()
     empty_by_label = Counter()
@@ -78,10 +61,9 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
         mask = read_mask(archive, mask_path)
 
         if mask.shape[::-1] != image_size:
-            anomalies.append((
-                filename,
-                f"Size mismatch: image={image_size}, mask={mask.shape[::-1]}"
-            ))
+            anomalies.append(
+                (filename, f"Size mismatch: image={image_size}, mask={mask.shape[::-1]}")
+            )
             continue
 
         foreground = int(mask.sum())
@@ -97,16 +79,10 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
             nonempty_by_label[label] += 1
 
         if label == "Normal" and foreground > 0:
-            anomalies.append((
-                filename,
-                "Normal image has non-empty mask"
-            ))
+            anomalies.append((filename, "Normal image has non-empty mask"))
 
         if label in ("Benign", "Malignant") and foreground == 0:
-            anomalies.append((
-                filename,
-                f"{label} image has empty mask"
-            ))
+            anomalies.append((filename, f"{label} image has empty mask"))
 
     print("=== DATASET SUMMARY ===")
     print("CSV rows processed:", sum(summary.values()))
@@ -144,9 +120,9 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
         print(f"Maximum: {max(fractions):.6f}")
 
         print("\nLargest mask fractions:")
-        for filename, label, fraction in sorted(
-            mask_areas, key=lambda item: item[2], reverse=True
-        )[:10]:
+        for filename, label, fraction in sorted(mask_areas, key=lambda item: item[2], reverse=True)[
+            :10
+        ]:
             print(f"  {filename} | {label} | {fraction:.2%}")
 
     print("\n=== ANOMALIES ===")
@@ -161,14 +137,9 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
 
         with zipfile.ZipFile(ZIP_PATH, "r") as archive:
             with archive.open(f"{ROOT}/INFO.csv") as file:
-                reader = csv.DictReader(
-                    (line.decode("utf-8-sig") for line in file),
-                    delimiter=";"
-                )
+                reader = csv.DictReader((line.decode("utf-8-sig") for line in file), delimiter=";")
 
                 print("Columns:", reader.fieldnames)
 
                 for row in list(reader)[:15]:
                     print(row)
-
-

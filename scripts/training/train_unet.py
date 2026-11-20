@@ -1,55 +1,36 @@
+"""Train a U-Net on one BUS-UCLM split CSV.
+
+Inputs: a split CSV with train and val partitions (--split-csv) and the YAML config (--config).
+Outputs, written to --output-dir: best_model.pt, the checkpoint with the highest validation
+lesion macro-Dice at threshold 0.5, and training_log.csv with the per-epoch losses and
+validation metrics.
+"""
+
 import argparse
 import csv
 import random
-import sys
 import time
 from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 import yaml
 from torch import nn
 from torch.utils.data import DataLoader
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
-
-
-PROJECT_ROOT = find_project_root()
-
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-
 from src.datasets.bus_uclm import BUSUCLMDataset
-from src.models.unet import UNet
-from src.models.attention_unet import AttentionUNet
 from src.datasets.preprocessing import (
-    resize_with_padding,
     resize_with_constant_padding,
+    resize_with_padding,
 )
-
-
+from src.models.attention_unet import AttentionUNet
+from src.models.unet import UNet
+from src.utils.paths import PROJECT_ROOT
 
 
 def resolve_project_path(path):
     path = Path(path)
     return path if path.is_absolute() else PROJECT_ROOT / path
-
 
 
 def set_seed(seed):
@@ -80,8 +61,7 @@ def dice_loss(logits, targets, smooth=1.0):
 
 
 def calculate_metrics(
-    model, loader, device, image_size, use_amp,
-    bce_loss_fn, padding_mode, config
+    model, loader, device, image_size, use_amp, bce_loss_fn, padding_mode, config
 ):
     model.eval()
     total_loss = 0.0
@@ -96,19 +76,16 @@ def calculate_metrics(
             images = batch["image"].to(device, non_blocking=True)
             masks = batch["mask"].to(device, non_blocking=True)
             labels = batch["label"]
-            images, masks = preprocess_batch(
-                images, masks, image_size, padding_mode
-            )
+            images, masks = preprocess_batch(images, masks, image_size, padding_mode)
 
             with torch.amp.autocast(
                 device_type=device.type,
                 enabled=use_amp and device.type == "cuda",
             ):
                 logits = model(images)
-                loss = (
-                    config["loss"]["bce_weight"] * bce_loss_fn(logits, masks)
-                    + config["loss"]["dice_weight"] * dice_loss(logits, masks)
-                )
+                loss = config["loss"]["bce_weight"] * bce_loss_fn(logits, masks) + config["loss"][
+                    "dice_weight"
+                ] * dice_loss(logits, masks)
 
             batch_size = images.size(0)
             total_loss += loss.item() * batch_size
@@ -121,10 +98,7 @@ def calculate_metrics(
                 if label in ("Benign", "Malignant"):
                     intersection = (pred & target).sum().item()
                     denominator = pred.sum().item() + target.sum().item()
-                    dice = (
-                        2.0 * intersection / denominator
-                        if denominator > 0 else 1.0
-                    )
+                    dice = 2.0 * intersection / denominator if denominator > 0 else 1.0
                     lesion_dice_sum += dice
                     lesion_count += 1
                 elif label == "Normal":
@@ -136,8 +110,7 @@ def calculate_metrics(
         "loss": total_loss / max(total_images, 1),
         "lesion_dice": lesion_dice_sum / max(lesion_count, 1),
         "normal_false_positive_rate": (
-            normal_false_positive_count / normal_count
-            if normal_count else 0.0
+            normal_false_positive_count / normal_count if normal_count else 0.0
         ),
         "lesion_images": lesion_count,
         "normal_images": normal_count,
@@ -148,7 +121,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Train U-Net using a specified BUS-UCLM split CSV."
     )
-    parser.add_argument("--config", default="configs/unet.yaml")
+    parser.add_argument("--config", default="configs/paper_unet.yaml")
     parser.add_argument("--split-csv", required=True)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--output-dir", required=True)
@@ -159,9 +132,7 @@ def main():
         help="Model architecture to train.",
     )
     parser.add_argument("--epochs", type=int, default=None)
-    parser.add_argument(
-        "--padding", choices=["replicate", "constant"], default="replicate"
-    )
+    parser.add_argument("--padding", choices=["replicate", "constant"], default="replicate")
     args = parser.parse_args()
 
     config_path = resolve_project_path(args.config)
@@ -183,12 +154,8 @@ def main():
     if not split_csv_path.exists():
         raise FileNotFoundError(f"Split CSV not found: {split_csv_path}")
 
-    train_dataset = BUSUCLMDataset(
-        split="train", split_path=split_csv_path
-    )
-    val_dataset = BUSUCLMDataset(
-        split="val", split_path=split_csv_path
-    )
+    train_dataset = BUSUCLMDataset(split="train", split_path=split_csv_path)
+    val_dataset = BUSUCLMDataset(split="val", split_path=split_csv_path)
 
     generator = torch.Generator()
     generator.manual_seed(seed)
@@ -234,18 +201,14 @@ def main():
         weight_decay=config["training"]["weight_decay"],
     )
     pos_weight_value = config["loss"].get("pos_weight", 1.0)
-    bce_loss_fn = nn.BCEWithLogitsLoss(
-        pos_weight=torch.tensor([pos_weight_value], device=device)
-    )
+    bce_loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight_value], device=device))
 
     output_dir = resolve_project_path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     log_path = output_dir / "training_log.csv"
     checkpoint_path = output_dir / "best_model.pt"
     if checkpoint_path.exists():
-        raise FileExistsError(
-            f"{checkpoint_path} already exists. Choose a new --output-dir."
-        )
+        raise FileExistsError(f"{checkpoint_path} already exists. Choose a new --output-dir.")
 
     best_val_dice = -1.0
     best_val_normal_fp = None
@@ -269,10 +232,14 @@ def main():
 
     with log_path.open("w", newline="", encoding="utf-8") as file:
         fieldnames = [
-            "epoch", "train_loss", "val_loss",
+            "epoch",
+            "train_loss",
+            "val_loss",
             "val_lesion_dice_at_0_5",
             "val_normal_false_positive_rate_at_0_5",
-            "val_lesion_images", "val_normal_images", "epoch_seconds",
+            "val_lesion_images",
+            "val_normal_images",
+            "epoch_seconds",
         ]
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
@@ -286,9 +253,7 @@ def main():
             for batch in train_loader:
                 images = batch["image"].to(device, non_blocking=True)
                 masks = batch["mask"].to(device, non_blocking=True)
-                images, masks = preprocess_batch(
-                    images, masks, image_size, padding_mode
-                )
+                images, masks = preprocess_batch(images, masks, image_size, padding_mode)
                 optimizer.zero_grad(set_to_none=True)
 
                 with torch.amp.autocast(
@@ -298,10 +263,7 @@ def main():
                     logits = model(images)
                     bce = bce_loss_fn(logits, masks)
                     dice = dice_loss(logits, masks)
-                    loss = (
-                        config["loss"]["bce_weight"] * bce
-                        + config["loss"]["dice_weight"] * dice
-                    )
+                    loss = config["loss"]["bce_weight"] * bce + config["loss"]["dice_weight"] * dice
 
                 loss.backward()
                 optimizer.step()
@@ -311,8 +273,7 @@ def main():
 
             train_loss = running_loss / max(seen_images, 1)
             metrics = calculate_metrics(
-                model, val_loader, device, image_size, use_amp,
-                bce_loss_fn, padding_mode, config
+                model, val_loader, device, image_size, use_amp, bce_loss_fn, padding_mode, config
             )
             epoch_seconds = time.time() - start_time
 
@@ -325,17 +286,18 @@ def main():
                 f"time={epoch_seconds:.1f}s"
             )
 
-            writer.writerow({
-                "epoch": epoch,
-                "train_loss": train_loss,
-                "val_loss": metrics["loss"],
-                "val_lesion_dice_at_0_5": metrics["lesion_dice"],
-                "val_normal_false_positive_rate_at_0_5":
-                    metrics["normal_false_positive_rate"],
-                "val_lesion_images": metrics["lesion_images"],
-                "val_normal_images": metrics["normal_images"],
-                "epoch_seconds": round(epoch_seconds, 2),
-            })
+            writer.writerow(
+                {
+                    "epoch": epoch,
+                    "train_loss": train_loss,
+                    "val_loss": metrics["loss"],
+                    "val_lesion_dice_at_0_5": metrics["lesion_dice"],
+                    "val_normal_false_positive_rate_at_0_5": metrics["normal_false_positive_rate"],
+                    "val_lesion_images": metrics["lesion_images"],
+                    "val_normal_images": metrics["normal_images"],
+                    "epoch_seconds": round(epoch_seconds, 2),
+                }
+            )
             file.flush()
 
             # Predefined primary selection rule: maximize validation lesion
@@ -344,20 +306,21 @@ def main():
                 best_val_dice = metrics["lesion_dice"]
                 best_val_normal_fp = metrics["normal_false_positive_rate"]
                 epochs_without_improvement = 0
-                torch.save({
-                    "model_state_dict": model.state_dict(),
-                    "epoch": epoch,
-                    "val_lesion_dice_at_0_5": best_val_dice,
-                    "val_normal_false_positive_rate_at_0_5":
-                        best_val_normal_fp,
-                    "val_loss": metrics["loss"],
-                    "config": config,
-                    "seed": seed,
-                    "split_csv": str(split_csv_path),
-                    "padding_mode": padding_mode,
-                    "selection_rule":
-                        "maximum validation lesion macro-Dice at threshold 0.5",
-                }, checkpoint_path)
+                torch.save(
+                    {
+                        "model_state_dict": model.state_dict(),
+                        "epoch": epoch,
+                        "val_lesion_dice_at_0_5": best_val_dice,
+                        "val_normal_false_positive_rate_at_0_5": best_val_normal_fp,
+                        "val_loss": metrics["loss"],
+                        "config": config,
+                        "seed": seed,
+                        "split_csv": str(split_csv_path),
+                        "padding_mode": padding_mode,
+                        "selection_rule": "maximum validation lesion macro-Dice at threshold 0.5",
+                    },
+                    checkpoint_path,
+                )
                 print(
                     f"  Saved best_model.pt | "
                     f"lesion Dice@0.5={best_val_dice:.4f} | "

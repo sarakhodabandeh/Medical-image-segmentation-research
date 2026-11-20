@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn.functional as F
 
@@ -67,6 +66,7 @@ def resize_with_padding(images, masks, size=256):
     )
 
     return resized_images, resized_masks
+
 
 def resize_with_constant_padding(images, masks, size=256):
     """

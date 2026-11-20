@@ -1,40 +1,26 @@
+"""Validate the BUS-UCLM dataset zip.
 
-import zipfile
+Checks that the entries of INFO.csv have an image and a mask in the zip and compares the image
+and mask sizes.
+Input: the dataset zip in data/raw/.
+Output: a summary printed to the screen; no files are written.
+"""
+
 import csv
-from pathlib import Path
-from io import BytesIO
+import zipfile
 from collections import Counter
+from io import BytesIO
 
 import numpy as np
 from PIL import Image
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError("Could not locate project root.")
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 ZIP_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
+    PROJECT_ROOT / "data" / "raw" / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
 )
 
-ROOT = (
-    "BUS-UCLM Breast ultrasound lesion segmentation dataset/"
-    "BUS-UCLM"
-)
+ROOT = "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
 
 
 def read_image(archive, path):
@@ -46,10 +32,7 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
     names = set(archive.namelist())
 
     with archive.open(f"{ROOT}/INFO.csv", "r") as f:
-        rows = csv.DictReader(
-            (line.decode("utf-8-sig") for line in f),
-            delimiter=";"
-        )
+        rows = csv.DictReader((line.decode("utf-8-sig") for line in f), delimiter=";")
         metadata = list(rows)
 
     summary = Counter()
@@ -79,9 +62,7 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
         mask_size = mask.size
 
         if image_size != mask_size:
-            mismatches.append(
-                (filename, label, image_size, mask_size)
-            )
+            mismatches.append((filename, label, image_size, mask_size))
             summary["dimension_mismatch"] += 1
         else:
             summary["matching_dimensions"] += 1
@@ -96,10 +77,7 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
             summary["nonempty_masks"] += 1
 
         colors = {
-            tuple(int(v) for v in color)
-            for color in np.unique(
-                mask_array.reshape(-1, 3), axis=0
-            )
+            tuple(int(v) for v in color) for color in np.unique(mask_array.reshape(-1, 3), axis=0)
         }
 
         for color in colors:
@@ -121,10 +99,7 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
 
     print("\n=== DIMENSION MISMATCHES ===")
     for filename, label, image_size, mask_size in mismatches:
-        print(
-            f"{filename} | label={label} | "
-            f"image={image_size} | mask={mask_size}"
-        )
+        print(f"{filename} | label={label} | image={image_size} | mask={mask_size}")
 
     print("\n=== MISSING FILES ===")
     for filename in missing_files:

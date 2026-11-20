@@ -1,41 +1,47 @@
-﻿from itertools import combinations
-from pathlib import Path
+"""Count the patients shared between the evaluation sets of different split seeds.
+
+Input: test_per_image_metrics.csv (--metrics-csv).
+Output, written to --output-dir: patient_overlap_image.csv and patient_overlap_patient.csv with
+the pairwise overlap of patients across seeds.
+"""
+
+import argparse
+from itertools import combinations
 
 import pandas as pd
 
+from src.utils.paths import PROJECT_ROOT, project_path
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
-
-
-PROJECT_ROOT = find_project_root()
 INPUT = PROJECT_ROOT / "results" / "test_evaluation" / "test_per_image_metrics.csv"
 OUTPUT = PROJECT_ROOT / "results" / "patient_overlap_audit"
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Audit patient overlap between the image-level and patient-level splits."
+    )
+    parser.add_argument(
+        "--metrics-csv",
+        default=str(INPUT),
+        help="Per-image metrics CSV from evaluate_paired_test.py.",
+    )
+    parser.add_argument("--output-dir", default=str(OUTPUT), help="Folder for the audit CSVs.")
+    return parser.parse_args()
+
+
 def main():
-    df = pd.read_csv(INPUT)
+    args = parse_args()
+    input_path = project_path(args.metrics_csv)
+    output_dir = project_path(args.output_dir)
+    df = pd.read_csv(input_path)
     required = {"seed", "split_type", "filename", "patient_id", "label"}
     missing = required - set(df.columns)
     if missing:
         raise ValueError(f"Missing columns: {sorted(missing)}")
 
-    test = df[
-        ["seed", "split_type", "filename", "patient_id", "label"]
-    ].drop_duplicates()
+    test = df[["seed", "split_type", "filename", "patient_id", "label"]].drop_duplicates()
 
-    OUTPUT.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     for split in ("image", "patient"):
         subset = test[test["split_type"] == split]
@@ -51,27 +57,34 @@ def main():
         rows = []
         for seed_a, seed_b in combinations(sorted(patient_sets), 2):
             shared = patient_sets[seed_a] & patient_sets[seed_b]
-            rows.append({
-                "split_type": split,
-                "seed_a": seed_a,
-                "seed_b": seed_b,
-                "patients_a": len(patient_sets[seed_a]),
-                "patients_b": len(patient_sets[seed_b]),
-                "shared_patients": len(shared),
-                "shared_patient_ids": ";".join(sorted(shared)),
-            })
+            rows.append(
+                {
+                    "split_type": split,
+                    "seed_a": seed_a,
+                    "seed_b": seed_b,
+                    "patients_a": len(patient_sets[seed_a]),
+                    "patients_b": len(patient_sets[seed_b]),
+                    "shared_patients": len(shared),
+                    "shared_patient_ids": ";".join(sorted(shared)),
+                }
+            )
 
         overlap = pd.DataFrame(
             rows,
             columns=[
-                "split_type", "seed_a", "seed_b", "patients_a",
-                "patients_b", "shared_patients", "shared_patient_ids",
+                "split_type",
+                "seed_a",
+                "seed_b",
+                "patients_a",
+                "patients_b",
+                "shared_patients",
+                "shared_patient_ids",
             ],
         )
         print("\\nPairwise overlap:")
         print(overlap.to_string(index=False))
         overlap.to_csv(
-            OUTPUT / f"patient_overlap_{split}.csv",
+            output_dir / f"patient_overlap_{split}.csv",
             index=False,
         )
 

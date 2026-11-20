@@ -1,39 +1,21 @@
-﻿from pathlib import Path
+"""Patient-level cluster bootstrap of the paired differences.
+
+Input: test_per_image_metrics.csv (--metrics-csv).
+Resamples unique patients with replacement (default 10,000 replicates, random seed 20261102) and
+reports percentile 95% confidence intervals.
+Outputs, written to --output-dir: patient_seed_metrics.csv, patient_aggregated_metrics.csv and
+cluster_bootstrap_summary.csv.
+"""
+
+import argparse
 
 import numpy as np
 import pandas as pd
 
-
-# --------------------------------------------------
 # Configuration
-# --------------------------------------------------
+from src.utils.paths import PROJECT_ROOT, project_path
 
-
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError(
-        "Could not locate project root. "
-        "Expected configs/, src/, and requirements.txt."
-    )
-
-
-PROJECT_ROOT = find_project_root()
-
-INPUT = (
-    PROJECT_ROOT
-    / "results"
-    / "test_evaluation"
-    / "test_per_image_metrics.csv"
-)
+INPUT = PROJECT_ROOT / "results" / "test_evaluation" / "test_per_image_metrics.csv"
 
 OUTPUT_DIR = PROJECT_ROOT / "results" / "patient_bootstrap"
 
@@ -43,12 +25,40 @@ RANDOM_SEED = 20261102
 CONFIDENCE = 0.95
 
 
-def main():
-    # --------------------------------------------------
-    # Load data
-    # --------------------------------------------------
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Patient-level cluster bootstrap of paired split-strategy differences."
+    )
+    parser.add_argument(
+        "--metrics-csv",
+        default=str(INPUT),
+        help="Per-image metrics CSV from evaluate_paired_test.py.",
+    )
+    parser.add_argument("--output-dir", default=str(OUTPUT_DIR), help="Folder for the output CSVs.")
+    parser.add_argument(
+        "--n-bootstrap",
+        type=int,
+        default=N_BOOTSTRAP,
+        help="Number of bootstrap replicates.",
+    )
+    parser.add_argument(
+        "--random-seed",
+        type=int,
+        default=RANDOM_SEED,
+        help="Seed of the bootstrap random generator.",
+    )
+    return parser.parse_args()
 
-    df = pd.read_csv(INPUT)
+
+def main():
+    args = parse_args()
+    input_path = project_path(args.metrics_csv)
+    output_dir = project_path(args.output_dir)
+    n_bootstrap = args.n_bootstrap
+    random_seed = args.random_seed
+    # Load data
+
+    df = pd.read_csv(input_path)
 
     required = {
         "seed",
@@ -65,16 +75,11 @@ def main():
     if missing:
         raise ValueError(f"Missing columns: {sorted(missing)}")
 
-
-    # --------------------------------------------------
     # Calculate paired metrics for each patient and seed
-    # --------------------------------------------------
 
     rows = []
 
-    for (seed, patient_id), group in df.groupby(
-        ["seed", "patient_id"]
-    ):
+    for (seed, patient_id), group in df.groupby(["seed", "patient_id"]):
         result = {
             "seed": seed,
             "patient_id": patient_id,
@@ -89,24 +94,16 @@ def main():
             result[f"{split_type}_lesion_images"] = len(lesions)
             result[f"{split_type}_normal_images"] = len(normals)
 
-            result[f"{split_type}_lesion_dice"] = (
-                lesions["dice"].mean()
-                if len(lesions) else np.nan
-            )
+            result[f"{split_type}_lesion_dice"] = lesions["dice"].mean() if len(lesions) else np.nan
 
-            result[f"{split_type}_lesion_iou"] = (
-                lesions["iou"].mean()
-                if len(lesions) else np.nan
-            )
+            result[f"{split_type}_lesion_iou"] = lesions["iou"].mean() if len(lesions) else np.nan
 
             result[f"{split_type}_normal_fp_rate"] = (
-                normals["normal_false_positive_image"].mean()
-                if len(normals) else np.nan
+                normals["normal_false_positive_image"].mean() if len(normals) else np.nan
             )
 
             result[f"{split_type}_normal_fp_area"] = (
-                normals["false_positive_area_fraction"].mean()
-                if len(normals) else np.nan
+                normals["false_positive_area_fraction"].mean() if len(normals) else np.nan
             )
 
         for metric in [
@@ -116,19 +113,14 @@ def main():
             "normal_fp_area",
         ]:
             result[f"{metric}_difference_patient_minus_image"] = (
-                result[f"patient_{metric}"] -
-                result[f"image_{metric}"]
+                result[f"patient_{metric}"] - result[f"image_{metric}"]
             )
 
         rows.append(result)
 
-
     patient_seed = pd.DataFrame(rows)
 
-
-    # --------------------------------------------------
     # Aggregate repeated observations within each patient
-    # --------------------------------------------------
 
     metrics = [
         "lesion_dice",
@@ -157,12 +149,9 @@ def main():
 
     patient_summary = pd.DataFrame(patient_rows)
 
-
-    # --------------------------------------------------
     # Cluster bootstrap: resample unique patients
-    # --------------------------------------------------
 
-    rng = np.random.default_rng(RANDOM_SEED)
+    rng = np.random.default_rng(random_seed)
 
     n_patients = len(patient_summary)
 
@@ -182,11 +171,7 @@ def main():
 
         observed = values.mean()
 
-        sampled_indices = rng.integers(
-            0,
-            len(values),
-            size=(N_BOOTSTRAP, len(values))
-        )
+        sampled_indices = rng.integers(0, len(values), size=(n_bootstrap, len(values)))
 
         bootstrap_means = values[sampled_indices].mean(axis=1)
 
@@ -199,53 +184,33 @@ def main():
             "mean_difference_patient_minus_image": observed,
             "ci_lower_95": lower,
             "ci_upper_95": upper,
-            "bootstrap_probability_difference_positive": (
-                bootstrap_means > 0
-            ).mean(),
+            "bootstrap_probability_difference_positive": (bootstrap_means > 0).mean(),
         }
 
-
-    # --------------------------------------------------
     # Save outputs
-    # --------------------------------------------------
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    patient_seed.to_csv(
-        OUTPUT_DIR / "patient_seed_metrics.csv",
-        index=False
-    )
+    patient_seed.to_csv(output_dir / "patient_seed_metrics.csv", index=False)
 
-    patient_summary.to_csv(
-        OUTPUT_DIR / "patient_aggregated_metrics.csv",
-        index=False
-    )
+    patient_summary.to_csv(output_dir / "patient_aggregated_metrics.csv", index=False)
 
     bootstrap_df = pd.DataFrame(bootstrap_results).T
-    bootstrap_df.to_csv(
-        OUTPUT_DIR / "cluster_bootstrap_summary.csv"
-    )
+    bootstrap_df.to_csv(output_dir / "cluster_bootstrap_summary.csv")
 
-
-    # --------------------------------------------------
     # Print report
-    # --------------------------------------------------
 
     print("\nUnique patients:", n_patients)
     print("Patient-seed observations:", len(patient_seed))
 
     print("\nPatient observations per patient:")
-    print(
-        patient_summary[
-            ["patient_id", "n_seeds"]
-        ].to_string(index=False)
-    )
+    print(patient_summary[["patient_id", "n_seeds"]].to_string(index=False))
 
     print("\nCLUSTER BOOTSTRAP RESULTS")
     print(bootstrap_df.round(5).to_string())
 
     print("\nSaved files:")
-    for path in sorted(OUTPUT_DIR.glob("*.csv")):
+    for path in sorted(output_dir.glob("*.csv")):
         print(path)
 
 

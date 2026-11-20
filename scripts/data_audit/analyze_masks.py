@@ -1,50 +1,31 @@
+"""Analyse the segmentation masks of the BUS-UCLM dataset.
 
-import zipfile
+Input: the dataset zip in data/raw/ (INFO.csv, images and masks are read directly from the zip).
+Output: a summary of the masks printed to the screen; no files are written.
+"""
+
 import csv
-from pathlib import Path
-from io import BytesIO
+import zipfile
 from collections import Counter
+from io import BytesIO
 
 import numpy as np
 from PIL import Image
 
-def find_project_root():
-    current = Path(__file__).resolve().parent
-
-    for directory in (current, *current.parents):
-        if (
-            (directory / "configs").is_dir()
-            and (directory / "src").is_dir()
-            and (directory / "requirements.txt").is_file()
-        ):
-            return directory
-
-    raise RuntimeError("Could not locate project root.")
-
-
-PROJECT_ROOT = find_project_root()
+from src.utils.paths import PROJECT_ROOT
 
 ZIP_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
+    PROJECT_ROOT / "data" / "raw" / "BUS-UCLM Breast ultrasound lesion segmentation dataset.zip"
 )
 
-ROOT = (
-    "BUS-UCLM Breast ultrasound lesion segmentation dataset/"
-    "BUS-UCLM"
-)
+ROOT = "BUS-UCLM Breast ultrasound lesion segmentation dataset/BUS-UCLM"
 
 records = []
 skipped = []
 
 with zipfile.ZipFile(ZIP_PATH, "r") as archive:
     with archive.open(f"{ROOT}/INFO.csv", "r") as file:
-        reader = csv.DictReader(
-            (line.decode("utf-8-sig") for line in file),
-            delimiter=";"
-        )
+        reader = csv.DictReader((line.decode("utf-8-sig") for line in file), delimiter=";")
 
         for row in reader:
             filename = row["Image"]
@@ -71,15 +52,18 @@ with zipfile.ZipFile(ZIP_PATH, "r") as archive:
 
             # Count connected components in the binary mask.
             from scipy.ndimage import label
+
             _, component_count = label(foreground)
 
-            records.append({
-                "filename": filename,
-                "class": row["Label"],
-                "lesion_pixels": lesion_pixels,
-                "lesion_fraction": fraction,
-                "components": int(component_count),
-            })
+            records.append(
+                {
+                    "filename": filename,
+                    "class": row["Label"],
+                    "lesion_pixels": lesion_pixels,
+                    "lesion_fraction": fraction,
+                    "components": int(component_count),
+                }
+            )
 
 print("Analyzed images:", len(records))
 print("Skipped for dimension mismatch:", len(skipped))
@@ -101,11 +85,7 @@ print("\nConnected-component counts:")
 print(dict(Counter(r["components"] for r in records)))
 
 print("\n10 largest masks:")
-for r in sorted(
-    records,
-    key=lambda x: x["lesion_fraction"],
-    reverse=True
-)[:10]:
+for r in sorted(records, key=lambda x: x["lesion_fraction"], reverse=True)[:10]:
     print(
         f"{r['filename']} | {r['class']} | "
         f"fraction={r['lesion_fraction']:.4f} | "
@@ -115,10 +95,7 @@ for r in sorted(
 print("\n10 smallest non-empty masks:")
 nonempty = [r for r in records if r["lesion_fraction"] > 0]
 
-for r in sorted(
-    nonempty,
-    key=lambda x: x["lesion_fraction"]
-)[:10]:
+for r in sorted(nonempty, key=lambda x: x["lesion_fraction"])[:10]:
     print(
         f"{r['filename']} | {r['class']} | "
         f"fraction={r['lesion_fraction']:.6f} | "
