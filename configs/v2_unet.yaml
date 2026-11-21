@@ -1,0 +1,48 @@
+# Settings for the v2 experiments (patient-grouped 5-fold paired design, U-Net).
+# Differences from paper_unet.yaml (v1): training runs to convergence (up to 200 epochs,
+# early stopping with patience 25, learning rate halved when validation Dice plateaus),
+# fp16 mixed precision with gradient scaling, train-time augmentation, and decoded images
+# cached in memory. Split CSV, output folder and training seed are given on the command line.
+
+experiment:
+  name: v2_unet
+  seed: 0
+
+data:
+  image_size: 256
+  batch_size: 4
+  num_workers: 0
+  cache_in_memory: true
+
+model:
+  name: unet
+  in_channels: 3
+  out_channels: 1
+  base_channels: 16
+
+training:
+  epochs: 200
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  early_stopping_patience: 25
+  use_amp: true
+  grad_scaler: true
+  lr_scheduler:
+    type: plateau
+    factor: 0.5
+    patience: 10
+    min_lr: 0.000001
+
+loss:
+  bce_weight: 0.5
+  dice_weight: 0.5
+  pos_weight: 5.0
+
+augmentation:
+  enabled: true
+  hflip_prob: 0.5
+  rotation_degrees: 10.0
+  scale_range: [0.9, 1.1]
+  brightness: 0.2
+  contrast: 0.2
+  gamma_range: [0.8, 1.2]

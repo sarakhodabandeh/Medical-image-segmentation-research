@@ -4,6 +4,22 @@ All notable changes to this repository are listed here. The experiments and resu
 manuscript were not changed by any of these edits: the evaluation and statistics scripts were rerun
 after the refactoring and reproduced the committed result files exactly.
 
+## [Unreleased] - v2 experiments
+
+Nothing in this section changes the v1 paper runs: every new training option is off in
+`configs/paper_unet.yaml`.
+
+### Added
+- `docs/analysis_plan_v2.md`: pre-specified design, endpoints and statistical model.
+- Patient-grouped 5-fold paired splits (`scripts/splits/create_kfold_paired_splits.py`,
+  `data/processed/kfold_splits/`) with tests (`tests/test_kfold_splits.py`).
+- `configs/v2_unet.yaml` and new optional training settings in `train_unet.py`: learning-rate
+  scheduler, gradient scaling for fp16, train-time augmentation (`src/datasets/augment.py`),
+  in-memory image cache, `--train-seed`, validation false-positive area fraction and learning
+  rate in `training_log.csv`, and a `training_complete.txt` marker at the end of each run.
+- `scripts/evaluation/evaluate_v2.py` and `scripts/analysis/analyze_v2.py` (mixed model and
+  hierarchical bootstrap; adds `statsmodels` to the requirements), `run_v2.py`.
+
 ## [1.0.1] - 2026-11-21
 
 No change to the paper experiments, split files or the result tables of the manuscript.

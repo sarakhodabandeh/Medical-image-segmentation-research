@@ -5,6 +5,12 @@ Outputs, written to --output-dir: best_model.pt, the checkpoint with the highest
 lesion macro-Dice at threshold 0.5, and training_log.csv with the per-epoch losses and
 validation metrics. With --save-every-epoch, a diagnostic checkpoint is also written
 after every epoch to <output-dir>/epoch_checkpoints/.
+
+Optional config keys (absent in configs/paper_unet.yaml, so the v1 paper runs are unchanged):
+training.lr_scheduler (ReduceLROnPlateau on validation lesion Dice), training.grad_scaler
+(gradient scaling for fp16 mixed precision), augmentation (train-time augmentation, see
+src/datasets/augment.py) and data.cache_in_memory. --train-seed sets the seed for model
+initialisation, data order and augmentation independently of the split file.
 """
 
 import argparse
@@ -19,6 +25,7 @@ import yaml
 from torch import nn
 from torch.utils.data import DataLoader
 
+from src.datasets.augment import augment_batch
 from src.datasets.bus_uclm import BUSUCLMDataset
 from src.datasets.preprocessing import (
     resize_with_constant_padding,
@@ -71,6 +78,7 @@ def calculate_metrics(
     lesion_count = 0
     normal_count = 0
     normal_false_positive_count = 0
+    normal_fp_area_sum = 0.0
 
     with torch.no_grad():
         for batch in loader:
@@ -106,12 +114,16 @@ def calculate_metrics(
                     normal_count += 1
                     if pred.any().item():
                         normal_false_positive_count += 1
+                    normal_fp_area_sum += pred.float().mean().item()
 
     return {
         "loss": total_loss / max(total_images, 1),
         "lesion_dice": lesion_dice_sum / max(lesion_count, 1),
         "normal_false_positive_rate": (
             normal_false_positive_count / normal_count if normal_count else 0.0
+        ),
+        "normal_false_positive_area_fraction": (
+            normal_fp_area_sum / normal_count if normal_count else 0.0
         ),
         "lesion_images": lesion_count,
         "normal_images": normal_count,
@@ -124,7 +136,13 @@ def main():
     )
     parser.add_argument("--config", default="configs/paper_unet.yaml")
     parser.add_argument("--split-csv", required=True)
-    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--seed", type=int, default=None, help="Seed (v1 paper runs).")
+    parser.add_argument(
+        "--train-seed",
+        type=int,
+        default=None,
+        help="Seed for initialisation, data order and augmentation; overrides --seed.",
+    )
     parser.add_argument("--output-dir", required=True)
     parser.add_argument(
         "--model",
@@ -146,7 +164,12 @@ def main():
     with config_path.open("r", encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    seed = args.seed if args.seed is not None else config["experiment"]["seed"]
+    if args.train_seed is not None:
+        seed = args.train_seed
+    elif args.seed is not None:
+        seed = args.seed
+    else:
+        seed = config["experiment"]["seed"]
     set_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -155,14 +178,25 @@ def main():
     epochs = args.epochs if args.epochs is not None else config["training"]["epochs"]
     num_workers = config["data"]["num_workers"]
     use_amp = config["training"]["use_amp"]
+    use_grad_scaler = config["training"].get("grad_scaler", False) and use_amp
+    cache_in_memory = config["data"].get("cache_in_memory", False)
+    augmentation = config.get("augmentation", {}) or {}
+    use_augmentation = bool(augmentation.get("enabled", False))
+    scheduler_config = config["training"].get("lr_scheduler")
     padding_mode = args.padding
 
     split_csv_path = resolve_project_path(args.split_csv)
     if not split_csv_path.exists():
         raise FileNotFoundError(f"Split CSV not found: {split_csv_path}")
 
-    train_dataset = BUSUCLMDataset(split="train", split_path=split_csv_path)
-    val_dataset = BUSUCLMDataset(split="val", split_path=split_csv_path)
+    train_dataset = BUSUCLMDataset(
+        split="train", split_path=split_csv_path, cache_in_memory=cache_in_memory
+    )
+    val_dataset = BUSUCLMDataset(
+        split="val", split_path=split_csv_path, cache_in_memory=cache_in_memory
+    )
+    augmentation_generator = torch.Generator()
+    augmentation_generator.manual_seed(seed + 1)
 
     generator = torch.Generator()
     generator.manual_seed(seed)
@@ -207,6 +241,18 @@ def main():
         lr=config["training"]["learning_rate"],
         weight_decay=config["training"]["weight_decay"],
     )
+    scheduler = None
+    if scheduler_config:
+        if scheduler_config.get("type") != "plateau":
+            raise ValueError(f"Unknown lr_scheduler type: {scheduler_config.get('type')}")
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode="max",
+            factor=scheduler_config.get("factor", 0.5),
+            patience=scheduler_config.get("patience", 10),
+            min_lr=scheduler_config.get("min_lr", 1e-6),
+        )
+    grad_scaler = torch.amp.GradScaler("cuda", enabled=use_grad_scaler and device.type == "cuda")
     pos_weight_value = config["loss"].get("pos_weight", 1.0)
     bce_loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight_value], device=device))
 
@@ -238,6 +284,9 @@ def main():
     print("Batch size:", batch_size)
     print("Padding:", padding_mode)
     print("BCE positive weight:", pos_weight_value)
+    print("Mixed precision:", use_amp, "| gradient scaler:", use_grad_scaler)
+    print("Augmentation:", use_augmentation, "| LR scheduler:", scheduler_config or "none")
+    print("Early-stopping patience:", patience)
     print("Checkpoint selection: highest validation lesion macro-Dice at threshold 0.5")
     print("Normal-image FP rate is reported separately, not used as a selection constraint.")
 
@@ -248,6 +297,8 @@ def main():
             "val_loss",
             "val_lesion_dice_at_0_5",
             "val_normal_false_positive_rate_at_0_5",
+            "val_normal_false_positive_area_fraction_at_0_5",
+            "learning_rate",
             "val_lesion_images",
             "val_normal_images",
             "epoch_seconds",
@@ -265,6 +316,10 @@ def main():
                 images = batch["image"].to(device, non_blocking=True)
                 masks = batch["mask"].to(device, non_blocking=True)
                 images, masks = preprocess_batch(images, masks, image_size, padding_mode)
+                if use_augmentation:
+                    images, masks = augment_batch(
+                        images, masks, augmentation_generator, augmentation
+                    )
                 optimizer.zero_grad(set_to_none=True)
 
                 with torch.amp.autocast(
@@ -276,8 +331,9 @@ def main():
                     dice = dice_loss(logits, masks)
                     loss = config["loss"]["bce_weight"] * bce + config["loss"]["dice_weight"] * dice
 
-                loss.backward()
-                optimizer.step()
+                grad_scaler.scale(loss).backward()
+                grad_scaler.step(optimizer)
+                grad_scaler.update()
                 current_batch_size = images.size(0)
                 running_loss += loss.item() * current_batch_size
                 seen_images += current_batch_size
@@ -287,6 +343,9 @@ def main():
                 model, val_loader, device, image_size, use_amp, bce_loss_fn, padding_mode, config
             )
             epoch_seconds = time.time() - start_time
+            current_lr = optimizer.param_groups[0]["lr"]
+            if scheduler is not None:
+                scheduler.step(metrics["lesion_dice"])
 
             print(
                 f"Epoch {epoch:03d}/{epochs:03d} | "
@@ -304,6 +363,10 @@ def main():
                     "val_loss": metrics["loss"],
                     "val_lesion_dice_at_0_5": metrics["lesion_dice"],
                     "val_normal_false_positive_rate_at_0_5": metrics["normal_false_positive_rate"],
+                    "val_normal_false_positive_area_fraction_at_0_5": metrics[
+                        "normal_false_positive_area_fraction"
+                    ],
+                    "learning_rate": current_lr,
                     "val_lesion_images": metrics["lesion_images"],
                     "val_normal_images": metrics["normal_images"],
                     "epoch_seconds": round(epoch_seconds, 2),
@@ -355,6 +418,8 @@ def main():
                         "split_csv": str(split_csv_path),
                         "padding_mode": padding_mode,
                         "selection_rule": "maximum validation lesion macro-Dice at threshold 0.5",
+                        "train_seed": seed,
+                        "model_name": args.model,
                     },
                     checkpoint_path,
                 )
@@ -372,6 +437,13 @@ def main():
                     f"for {patience} consecutive epoch(s)."
                 )
                 break
+
+    # Marker that the run finished normally (used by run_v2.py to tell finished runs from
+    # interrupted ones, which also contain a best_model.pt).
+    (output_dir / "training_complete.txt").write_text(
+        f"best_val_lesion_dice_at_0_5={best_val_dice:.6f}\nlast_epoch={epoch}\nseed={seed}\n",
+        encoding="utf-8",
+    )
 
     print("\nTraining finished.")
     print(f"Best validation lesion Dice@0.5: {best_val_dice:.4f}")
