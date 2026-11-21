@@ -136,14 +136,14 @@ def main():
     )
     parser.add_argument(
         "--checkpoint-dir",
-        default="results/diagnostic_patient_99/epoch_checkpoints",
+        default="results/exploratory/diagnostic_patient_99/epoch_checkpoints",
     )
     parser.add_argument(
         "--split-csv",
         default="data/processed/paired_splits/patient_level_seed_99.csv",
     )
-    parser.add_argument("--config", default="configs/unet.yaml")
-    parser.add_argument("--output-dir", default="results/bn_recalibration")
+    parser.add_argument("--config", default="configs/exploratory/unet.yaml")
+    parser.add_argument("--output-dir", default="results/exploratory/bn_recalibration")
     parser.add_argument("--epochs", type=int, nargs="*", default=[8, 10])
     parser.add_argument("--batch-size", type=int, default=4)
     args = parser.parse_args()

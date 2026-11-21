@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from src.utils.paths import PROJECT_ROOT
 
 INPUT = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
-OUTPUT = PROJECT_ROOT / "data" / "processed" / "bus_uclm_image_split.csv"
+OUTPUT = PROJECT_ROOT / "data" / "processed" / "exploratory" / "bus_uclm_image_split.csv"
 
 SEED = 42
 TRAIN_RATIO = 0.70

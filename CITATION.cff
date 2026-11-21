@@ -16,6 +16,6 @@ keywords:
   - U-Net
   - data leakage
   - patient-level data splitting
-version: 1.0.0
+version: 1.0.1
 date-released: 2026-11-20
 doi: 10.5281/zenodo.24394781

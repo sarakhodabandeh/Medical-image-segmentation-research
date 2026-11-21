@@ -13,7 +13,7 @@ print(f"Python version: {sys.version}")
 paths = [
     "README.md",
     "requirements.txt",
-    "configs/unet.yaml",
+    "configs/exploratory/unet.yaml",
     "src/datasets/bus_uclm.py",
     "src/datasets/preprocessing.py",
     "src/models/unet.py",

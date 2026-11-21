@@ -4,7 +4,7 @@ import pandas as pd
 from src.utils.paths import PROJECT_ROOT
 
 INPUT = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
-OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "patient_level_splits"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "exploratory" / "patient_level_splits"
 
 SEEDS = [42, 123, 2025, 7, 99]
 N_CANDIDATES = 10000

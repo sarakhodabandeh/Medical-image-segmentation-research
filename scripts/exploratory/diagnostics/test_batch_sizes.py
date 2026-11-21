@@ -33,7 +33,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Check GPU memory for candidate U-Net batch sizes without training."
     )
-    parser.add_argument("--config", default="configs/unet.yaml")
+    parser.add_argument("--config", default="configs/exploratory/unet.yaml")
     parser.add_argument(
         "--split-csv",
         default="data/processed/paired_splits/patient_level_seed_99.csv",

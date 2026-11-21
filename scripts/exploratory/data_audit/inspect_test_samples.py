@@ -16,14 +16,14 @@ TARGET_FILENAMES = [
     "CODE_000.png",
 ]
 
-OUTPUT_DIR = PROJECT_ROOT / "results" / "test_evaluation" / "original_data_check"
+OUTPUT_DIR = PROJECT_ROOT / "results" / "exploratory" / "original_data_check"
 TARGET_FILENAMES = [
     "CAWI_005.png",
     "CAWI_010.png",
     "CODE_000.png",
 ]
 
-OUTPUT_DIR = PROJECT_ROOT / "results" / "test_evaluation" / "original_data_check"
+OUTPUT_DIR = PROJECT_ROOT / "results" / "exploratory" / "original_data_check"
 
 
 def main():

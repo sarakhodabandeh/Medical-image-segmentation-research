@@ -9,9 +9,9 @@ from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
 from src.utils.paths import PROJECT_ROOT
 
-CHECKPOINT = PROJECT_ROOT / "results" / "unet_aspect_ratio_pw5" / "best_model.pt"
+CHECKPOINT = PROJECT_ROOT / "results" / "exploratory" / "unet_aspect_ratio_pw5" / "best_model.pt"
 
-OUTPUT_DIR = PROJECT_ROOT / "results" / "false_positive_visualization"
+OUTPUT_DIR = PROJECT_ROOT / "results" / "exploratory" / "false_positive_visualization"
 
 THRESHOLDS = [0.60, 0.75]
 BATCH_SIZE = 4

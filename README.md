@@ -3,7 +3,7 @@
 ![tests](https://github.com/sarakhodabandeh/Medical-image-segmentation-research/actions/workflows/tests.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24394781.svg)](https://doi.org/10.5281/zenodo.24394781)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24394780.svg)](https://doi.org/10.5281/zenodo.24394780)
 
 Code for the paired study *Effect of Patient-Level versus Image-Level Data Splitting on Breast
 Ultrasound Lesion Segmentation and Normal-Image False Positives: A Paired Evaluation on the BUS-UCLM
@@ -118,7 +118,7 @@ Medical-image-segmentation-research/
 ├── .github/workflows/tests.yml     continuous integration (ruff and pytest)
 ├── configs/
 │   ├── paper_unet.yaml             settings used for the paper
-│   └── unet.yaml                   configuration of the earlier exploratory runs
+│   └── exploratory/unet.yaml       configuration of the earlier exploratory runs
 ├── data/
 │   ├── README.md                   layout of data/ and meaning of the CSV files
 │   ├── raw/                        dataset zip (not committed)
@@ -131,7 +131,8 @@ Medical-image-segmentation-research/
 │   ├── paired_full_{image|patient}_{seed}/   training logs
 │   ├── test_evaluation/ and test_evaluation_valid_region/
 │   ├── sensitivity_analysis/, patient_bootstrap/, leave_one_patient_out/
-│   └── patient_overlap_audit/, figures/
+│   ├── patient_overlap_audit/, figures/
+│   └── exploratory/                outputs of the side experiments (new outputs are not committed)
 ├── scripts/
 │   ├── data_audit/                 dataset inspection and validation
 │   ├── splits/                     split search, creation, validation and audit
@@ -176,7 +177,8 @@ The same checks run on every push through GitHub Actions.
 
 ## Data and citation
 
-Archived code (all versions): https://doi.org/10.5281/zenodo.24394781
+Archived code, all versions: https://doi.org/10.5281/zenodo.24394780. The version used for the
+manuscript is v1.0.0: https://doi.org/10.5281/zenodo.24394781
 
 Raw data are not redistributed. If you use this code, please cite the manuscript once available (GitHub also shows a "Cite this
 repository" button, generated from `CITATION.cff`) and the dataset paper:

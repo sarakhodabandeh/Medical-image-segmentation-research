@@ -10,9 +10,9 @@ from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
 from src.utils.paths import PROJECT_ROOT as ROOT
 
-CHECKPOINT = ROOT / "results" / "unet_aspect_ratio_pw5" / "best_model.pt"
+CHECKPOINT = ROOT / "results" / "exploratory" / "unet_aspect_ratio_pw5" / "best_model.pt"
 
-OUTPUT_DIR = ROOT / "results" / "false_positive_components"
+OUTPUT_DIR = ROOT / "results" / "exploratory" / "false_positive_components"
 
 THRESHOLDS = [0.60, 0.75]
 MIN_COMPONENT_SIZES = [0, 10, 25, 50, 100, 200]

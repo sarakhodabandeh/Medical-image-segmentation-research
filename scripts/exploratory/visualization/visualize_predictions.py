@@ -9,7 +9,7 @@ from src.datasets.bus_uclm import BUSUCLMDataset
 from src.models.unet import UNet
 from src.utils.paths import PROJECT_ROOT
 
-CHECKPOINT_PATH = PROJECT_ROOT / "results" / "unet_baseline" / "best_model.pt"
+CHECKPOINT_PATH = PROJECT_ROOT / "results" / "exploratory" / "unet_baseline" / "best_model.pt"
 
 
 def main():

@@ -11,7 +11,7 @@ from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
 from src.utils.paths import PROJECT_ROOT
 
-DEFAULT_CHECKPOINT_DIR = PROJECT_ROOT / "results" / "unet_replicate_pw5"
+DEFAULT_CHECKPOINT_DIR = PROJECT_ROOT / "results" / "exploratory" / "unet_replicate_pw5"
 
 DEFAULT_OUTPUT = DEFAULT_CHECKPOINT_DIR / "validation_threshold_analysis.csv"
 

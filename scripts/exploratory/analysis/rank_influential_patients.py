@@ -2,9 +2,10 @@ import pandas as pd
 
 from src.utils.paths import PROJECT_ROOT
 
-OUTPUT = PROJECT_ROOT / "results" / "leave_one_patient_out"
-INPUT = OUTPUT / "leave_one_patient_out_all.csv"
-SUMMARY_INPUT = OUTPUT / "leave_one_patient_out_summary.csv"
+LOPO_DIR = PROJECT_ROOT / "results" / "leave_one_patient_out"
+INPUT = LOPO_DIR / "leave_one_patient_out_all.csv"
+SUMMARY_INPUT = LOPO_DIR / "leave_one_patient_out_summary.csv"
+OUTPUT = PROJECT_ROOT / "results" / "exploratory" / "influential_patients"
 
 METHODS = [
     "equal_weight_per_seed",

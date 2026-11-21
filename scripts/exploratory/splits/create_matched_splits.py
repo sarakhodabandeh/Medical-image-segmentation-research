@@ -7,7 +7,7 @@ from src.utils.paths import PROJECT_ROOT
 
 INPUT = PROJECT_ROOT / "data" / "processed" / "bus_uclm_patient_split.csv"
 
-OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "matched_splits"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed" / "exploratory" / "matched_splits"
 
 SEEDS = [42, 123, 2025, 7, 99]
 

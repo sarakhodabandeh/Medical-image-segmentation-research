@@ -13,8 +13,8 @@ from src.utils.paths import PROJECT_ROOT
 ROOT = PROJECT_ROOT
 
 CHECKPOINTS = {
-    "epoch_005": (ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_005.pt"),
-    "epoch_007": (ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_007.pt"),
+    "epoch_005": (ROOT / "results" / "exploratory" / "unet_replicate_pw5_fp30" / "epoch_005.pt"),
+    "epoch_007": (ROOT / "results" / "exploratory" / "unet_replicate_pw5_fp30" / "epoch_007.pt"),
 }
 
 THRESHOLD = 0.50
@@ -27,7 +27,7 @@ def main():
     dataset = BUSUCLMDataset(split="val")
     loader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0)
 
-    output_root = ROOT / "results" / "visual_comparison_pw5_fp30"
+    output_root = ROOT / "results" / "exploratory" / "visual_comparison_pw5_fp30"
     output_root.mkdir(parents=True, exist_ok=True)
 
     for model_name, checkpoint_path in CHECKPOINTS.items():

@@ -33,18 +33,18 @@ def preprocess(images, masks, size, padding):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/unet.yaml")
+    parser.add_argument("--config", default="configs/exploratory/unet.yaml")
     parser.add_argument(
         "--split-csv",
         default="data/processed/paired_splits/patient_level_seed_99.csv",
     )
     parser.add_argument(
         "--checkpoint-dir",
-        default="results/diagnostic_patient_99/epoch_checkpoints",
+        default="results/exploratory/diagnostic_patient_99/epoch_checkpoints",
     )
     parser.add_argument(
         "--output-dir",
-        default="results/diagnostic_patient_99/probability_analysis",
+        default="results/exploratory/diagnostic_patient_99/probability_analysis",
     )
     parser.add_argument("--epochs", nargs="+", type=int, default=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     args = parser.parse_args()

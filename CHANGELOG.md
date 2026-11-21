@@ -4,6 +4,25 @@ All notable changes to this repository are listed here. The experiments and resu
 manuscript were not changed by any of these edits: the evaluation and statistics scripts were rerun
 after the refactoring and reproduced the committed result files exactly.
 
+## [1.0.1] - 2026-11-21
+
+No change to the paper experiments, split files or the result tables of the manuscript.
+
+### Changed
+- Exploratory scripts write to `results/exploratory/` and `data/processed/exploratory/`
+  instead of the paper's result folders; their configuration moved to
+  `configs/exploratory/unet.yaml`.
+- Side-experiment result files that were mixed into the paper folders moved to
+  `results/exploratory/` (`test_per_image.csv`, `preprocessing_comparison/`,
+  `patient_diagnostic_*.csv`, `influential_patients.csv`).
+- README: the DOI badge and the archive link use the all-versions (concept) DOI
+  10.5281/zenodo.24394780; the manuscript version stays 10.5281/zenodo.24394781.
+- `pyproject.toml` version now matches the release.
+
+### Removed
+- `results/sensitivity_analysis/patient_overlap_*.csv`, stale copies of
+  `results/patient_overlap_audit/` that the sensitivity script no longer writes.
+
 ## [1.0.0] - 2026-11-20
 
 ### Added

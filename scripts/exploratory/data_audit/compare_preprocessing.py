@@ -14,9 +14,11 @@ from src.datasets.preprocessing import resize_with_padding
 from src.models.unet import UNet
 from src.utils.paths import PROJECT_ROOT
 
-CHECKPOINT_PATH = PROJECT_ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_007.pt"
+CHECKPOINT_PATH = (
+    PROJECT_ROOT / "results" / "exploratory" / "unet_replicate_pw5_fp30" / "epoch_007.pt"
+)
 
-OUTPUT_DIR = PROJECT_ROOT / "results" / "test_evaluation" / "preprocessing_comparison"
+OUTPUT_DIR = PROJECT_ROOT / "results" / "exploratory" / "preprocessing_comparison"
 
 TARGET_FILENAMES = {
     "CAWI_005.png",

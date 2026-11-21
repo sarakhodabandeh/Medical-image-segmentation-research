@@ -378,7 +378,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Controlled BatchNorm vs GroupNorm U-Net comparison."
     )
-    parser.add_argument("--config", default="configs/unet.yaml")
+    parser.add_argument("--config", default="configs/exploratory/unet.yaml")
     parser.add_argument(
         "--split-csv",
         default="data/processed/paired_splits/patient_level_seed_99.csv",
@@ -389,7 +389,7 @@ def main():
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--eval-batch-size", type=int, default=4)
     parser.add_argument("--padding", choices=["replicate", "constant"], default="replicate")
-    parser.add_argument("--output-dir", default="results/norm_comparison_seed99")
+    parser.add_argument("--output-dir", default="results/exploratory/norm_comparison_seed99")
     args = parser.parse_args()
 
     with resolve_path(args.config).open("r", encoding="utf-8") as f:

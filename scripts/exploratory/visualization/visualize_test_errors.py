@@ -15,14 +15,14 @@ from src.utils.paths import PROJECT_ROOT
 
 ROOT = PROJECT_ROOT
 
-CHECKPOINT = ROOT / "results" / "unet_replicate_pw5_fp30" / "epoch_007.pt"
+CHECKPOINT = ROOT / "results" / "exploratory" / "unet_replicate_pw5_fp30" / "epoch_007.pt"
 
 THRESHOLD = 0.60
 NUM_WORST_IMAGES = 10
 
-CSV_PATH = ROOT / "results" / "test_evaluation" / "test_per_image.csv"
+CSV_PATH = ROOT / "results" / "exploratory" / "unet_replicate_pw5_fp30" / "test_per_image.csv"
 
-OUTPUT_DIR = ROOT / "results" / "test_evaluation" / "worst_case_visualizations"
+OUTPUT_DIR = ROOT / "results" / "exploratory" / "worst_case_visualizations"
 
 
 def main():

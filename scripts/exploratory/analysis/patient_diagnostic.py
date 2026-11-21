@@ -3,7 +3,7 @@ import pandas as pd
 from src.utils.paths import PROJECT_ROOT
 
 INPUT = PROJECT_ROOT / "results" / "test_evaluation" / "test_per_image_metrics.csv"
-OUTPUT = PROJECT_ROOT / "results" / "patient_diagnostic"
+OUTPUT = PROJECT_ROOT / "results" / "exploratory" / "patient_diagnostic"
 
 
 def main():

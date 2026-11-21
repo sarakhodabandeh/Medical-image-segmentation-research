@@ -7,7 +7,7 @@ from src.datasets.bus_uclm import BUSUCLMDataset
 from src.models.unet import UNet
 from src.utils.paths import PROJECT_ROOT
 
-CHECKPOINT = PROJECT_ROOT / "results" / "unet_weighted_bce_2_10ep" / "best_model.pt"
+CHECKPOINT = PROJECT_ROOT / "results" / "exploratory" / "unet_weighted_bce_2_10ep" / "best_model.pt"
 
 
 def main():

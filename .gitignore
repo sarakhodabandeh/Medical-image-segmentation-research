@@ -43,7 +43,11 @@ results/**/*.png
 
 *.egg-info/
 
-# Side experiments (kept locally, not part of the paper pipeline)
+# Side experiments (kept locally, not part of the paper pipeline).
+# Exploratory scripts now write to results/exploratory/; new outputs there are not committed.
+# The few small CSVs already tracked under results/exploratory/ stay tracked.
+results/exploratory/
+# Older local locations of the same side experiments:
 results/attention_unet_*/
 results/unet_*/
 results/smoke_test_*/
