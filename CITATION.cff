@@ -4,6 +4,8 @@ title: "Patient-level vs image-level data splitting in breast ultrasound lesion 
 authors:
   - family-names: "Khodabandeh Yalabadi"
     given-names: "Sara"
+    orcid: "https://orcid.org/0009-0008-5177-1258"
+    affiliation: "Independent Researcher, Tehran, Iran"
 repository-code: "https://github.com/sarakhodabandeh/Medical-image-segmentation-research"
 license: MIT
 abstract: >-
