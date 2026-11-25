@@ -1,0 +1,3 @@
+best_val_lesion_dice_at_0_5=0.725587
+last_epoch=103
+seed=1
