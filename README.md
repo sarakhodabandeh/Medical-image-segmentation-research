@@ -111,6 +111,35 @@ Warning: `scripts/splits/create_paired_splits.py` and `scripts/splits/create_mas
 overwrite the committed split files that the results depend on. They are not part of the pipeline;
 do not rerun them unless you intend to replace the splits.
 
+## v2 experiments (in progress)
+
+A revised design that addresses the limitations of the v1 runs. It is pre-specified in
+[`docs/analysis_plan_v2.md`](docs/analysis_plan_v2.md) and does not change any v1 file.
+
+- **Splits:** patient-grouped 5-fold paired design in `data/processed/kfold_splits/`
+  (`scripts/splits/create_kfold_paired_splits.py`). Every patient is tested in exactly one fold;
+  each test patient's images are split into a test half (identical in both arms) and a leak half
+  (used for training in the image-level arm only).
+- **Training:** `configs/v2_unet.yaml`: up to 200 epochs with early stopping (patience 25), learning
+  rate halved on plateau, augmentation, fp16 with gradient scaling; three training seeds per fold
+  and arm (30 runs, `--train-seed`).
+- **Evaluation:** `scripts/evaluation/evaluate_v2.py`: valid region as the primary analysis, fixed
+  and validation-chosen thresholds, false-positive measures with minimum component sizes,
+  lesion-level detection and image-level AUROC.
+- **Statistics:** `scripts/analysis/analyze_v2.py`: mixed model on paired differences (patient,
+  training seed and image as random effects) and a hierarchical bootstrap.
+
+```bash
+python run_v2.py --dry-run     # list the 30 training runs and the later steps
+python run_v2.py               # train, evaluate and analyse (can be stopped and restarted)
+```
+
+Outputs: `results/v2/unet/{arm}/fold{k}/train_seed{s}/` (training logs; checkpoints are not
+committed), `results/v2/evaluation/`, `results/v2/analysis/`, `results/v2/figures/` and
+`results/v2/paper/tables_v2.tex` (the tables of the manuscript).
+`python run_v2.py --skip-training` regenerates all of them from the committed results, except the
+example figure, which needs the checkpoints.
+
 ## Repository structure
 
 ```text
@@ -118,6 +147,7 @@ Medical-image-segmentation-research/
 ├── .github/workflows/tests.yml     continuous integration (ruff and pytest)
 ├── configs/
 │   ├── paper_unet.yaml             settings used for the paper
+│   ├── v2_unet.yaml                settings of the v2 experiments
 │   └── exploratory/unet.yaml       configuration of the earlier exploratory runs
 ├── data/
 │   ├── README.md                   layout of data/ and meaning of the CSV files
@@ -126,6 +156,7 @@ Medical-image-segmentation-research/
 │       ├── bus_uclm_patient_split.csv   master list of images, patients and labels
 │       ├── paired_split_candidates/     candidate validation/test cohorts
 │       ├── paired_splits/               the ten split files, manifest and audit reports
+│       ├── kfold_splits/                v2 patient-grouped 5-fold paired splits
 │       └── exploratory/                 earlier splits, not used in the paper
 ├── results/                        committed result tables of the paper (checkpoints are not committed)
 │   ├── paired_full_{image|patient}_{seed}/   training logs
@@ -147,6 +178,8 @@ Medical-image-segmentation-research/
 │   └── utils/                      project paths
 ├── tests/                          pytest tests
 ├── run_paper.py                    runs the whole pipeline
+├── run_v2.py                       runs the v2 pipeline
+├── docs/analysis_plan_v2.md        pre-specified v2 analysis plan
 ├── pyproject.toml, requirements.txt, requirements-dev.txt, .pre-commit-config.yaml
 ├── CHANGELOG.md
 ├── CITATION.cff                    how to cite this repository

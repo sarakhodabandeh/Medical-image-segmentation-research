@@ -1,0 +1,11 @@
+fold,arm,train_images,train_patients,train_benign,train_malignant,train_normal,val_images,val_patients,val_benign,val_malignant,val_normal,test_images,test_patients,test_benign,test_malignant,test_normal
+0,patient,441,25,108,56,277,89,5,26,14,49,73,7,20,10,43
+0,image,441,32,108,56,277,89,5,26,14,49,73,7,20,10,43
+1,patient,445,25,107,60,278,98,5,27,14,57,67,7,19,10,38
+1,image,445,32,107,60,278,98,5,27,14,57,67,7,19,10,38
+2,patient,419,23,107,58,254,112,6,30,13,69,74,8,19,11,44
+2,image,419,31,107,58,254,112,6,30,13,69,74,8,19,11,44
+3,patient,443,24,111,57,275,98,6,26,15,57,69,7,18,10,41
+3,image,443,31,111,57,275,98,6,26,15,57,69,7,18,10,41
+4,patient,418,23,110,59,249,117,6,28,14,75,71,8,18,9,44
+4,image,418,31,110,59,249,117,6,28,14,75,71,8,18,9,44

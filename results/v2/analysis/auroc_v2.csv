@@ -1,0 +1,2 @@
+n_run_pairs,mean_auroc_patient_level,mean_auroc_image_level,mean_difference,bootstrap_ci_low,bootstrap_ci_high
+15,0.8525437130678301,0.8936200716136421,-0.04107635854581198,-0.08834027642847908,0.010719376611428764
