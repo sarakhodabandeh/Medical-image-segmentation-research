@@ -19,6 +19,11 @@ Nothing in this section changes the v1 paper runs: every new training option is 
   rate in `training_log.csv`, and a `training_complete.txt` marker at the end of each run.
 - `scripts/evaluation/evaluate_v2.py` and `scripts/analysis/analyze_v2.py` (mixed model and
   hierarchical bootstrap; adds `statsmodels` to the requirements), `run_v2.py`.
+- Results of the 30 v2 runs (`results/v2/`): training logs, per-image test metrics, run
+  summaries and analysis tables.
+- Manuscript outputs: `scripts/visualization/figure_v2_paired_differences.py`,
+  `scripts/visualization/figure_v2_examples.py` and `scripts/analysis/latex_tables_v2.py`, which
+  write `results/v2/figures/` and `results/v2/paper/tables_v2.tex`; step 5 of `run_v2.py`.
 
 ## [1.0.1] - 2026-11-21
 

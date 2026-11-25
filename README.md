@@ -135,7 +135,10 @@ python run_v2.py               # train, evaluate and analyse (can be stopped and
 ```
 
 Outputs: `results/v2/unet/{arm}/fold{k}/train_seed{s}/` (training logs; checkpoints are not
-committed), `results/v2/evaluation/` and `results/v2/analysis/`.
+committed), `results/v2/evaluation/`, `results/v2/analysis/`, `results/v2/figures/` and
+`results/v2/paper/tables_v2.tex` (the tables of the manuscript).
+`python run_v2.py --skip-training` regenerates all of them from the committed results, except the
+example figure, which needs the checkpoints.
 
 ## Repository structure
 

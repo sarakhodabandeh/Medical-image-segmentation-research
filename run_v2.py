@@ -9,6 +9,9 @@ and restarted at any time. A run folder without that marker was interrupted: it 
 <folder>_interrupted_<time> and the run is trained again from the start.
 Runs are ordered by training seed, then fold, so partial results are balanced across folds.
 
+Steps after training only read the result files (the example figure also needs the
+checkpoints), so `python run_v2.py --skip-training` regenerates every table and figure.
+
 Usage: python run_v2.py [--skip-training] [--dry-run] [--train-seeds 0 1 2] [--folds 0 1 2 3 4]
 """
 
@@ -84,7 +87,15 @@ def main():
     print("\n== 4. Statistics")
     run([sys.executable, "scripts/analysis/analyze_v2.py"], args.dry_run)
 
-    print("\nDone. Results are in results/v2/evaluation/ and results/v2/analysis/.")
+    print("\n== 5. Figures and LaTeX tables")
+    run([sys.executable, "scripts/visualization/figure_v2_paired_differences.py"], args.dry_run)
+    run([sys.executable, "scripts/visualization/figure_v2_examples.py"], args.dry_run)
+    run([sys.executable, "scripts/analysis/latex_tables_v2.py"], args.dry_run)
+
+    print(
+        "\nDone. Results are in results/v2/evaluation/, results/v2/analysis/, results/v2/figures/"
+    )
+    print("and results/v2/paper/.")
 
 
 if __name__ == "__main__":
